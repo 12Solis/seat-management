@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct TemplateSelectionView: View {
-    let eventId: String
+    
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = TemplateViewModel()
+    @StateObject private var eventVM = EventViewModel()
+    @State private var isCreatingEvent = false
     @State private var errorMessage = ""
     
     var body: some View {
@@ -22,13 +24,16 @@ struct TemplateSelectionView: View {
                         .font(.caption)
                         .foregroundStyle(.blue)
                     if !viewModel.templates.isEmpty {
-                        Text("Primera plantilla: \(viewModel.templates[0].name)")
+                        Text("Selecciona una plantilla")
                             .font(.caption)
                             .foregroundStyle(.green)
                     }
                 }
                 if viewModel.isLoading && viewModel.templates.isEmpty {
                     ProgressView("Cargando plantillas...")
+                }
+                if isCreatingEvent{
+                    ProgressView("Creando evento...")
                 }
                 if !errorMessage.isEmpty{
                     Text(errorMessage)
@@ -57,7 +62,7 @@ struct TemplateSelectionView: View {
                     .padding(.vertical,4)
                     .onTapGesture {
                         print("🎯 Plantilla seleccionada: \(template.name)")
-                        createFromTemplate(template)
+                        createEventFromTemplate(template)
                     }
                 }
                 
@@ -78,19 +83,51 @@ struct TemplateSelectionView: View {
         
     }
     
-    private func createFromTemplate(_ template: SeatMapTemplate){
-        print("🔄 Creando mapa desde plantilla: \(template.name)")
-        viewModel.createFromTemplate(template: template, eventId: eventId){ result in
-            switch result{
-            case .success(let seatMapId):
-                print("✅ Mapa creado con ID: \(seatMapId)")
-                UserDefaults.standard.set(seatMapId, forKey: "seatMapId_\(eventId)")
-                dismiss()
+    private func createEventFromTemplate(_ template: SeatMapTemplate) {
+        isCreatingEvent = true
+        errorMessage = ""
+        
+        let newEvent = Event(
+            name: template.name,
+            date: Date().addingTimeInterval(86400),
+            place: "Lugar por definir"
+        )
+        print("Creando evento desde plantilla...")
+        
+        eventVM.createEvent(newEvent) { result in  // ✅ QUITAR [weak self]
+            switch result {
+            case .success(let eventId):
+                print("✅ Evento creado con ID: \(eventId)")
+                
+                // 2. Luego crear el mapa de asientos para este evento
+                self.viewModel.createFromTemplate(template: template, eventId: eventId) { seatMapResult in
+                    DispatchQueue.main.async {
+                        self.isCreatingEvent = false  // ✅ Cambiar a self.
+                        
+                        switch seatMapResult {
+                        case .success(let seatMapId):
+                            print("✅ Mapa creado con ID: \(seatMapId)")
+                            // Guardar ambos IDs para usarlos después
+                            UserDefaults.standard.set(eventId, forKey: "lastCreatedEventId")
+                            UserDefaults.standard.set(seatMapId, forKey: "seatMapId_\(eventId)")
+                            
+                            // Cerrar la vista
+                            self.dismiss()  // ✅ Cambiar a self.
+                            
+                        case .failure(let error):
+                            self.errorMessage = "Error creando mapa: \(error.localizedDescription)"  // ✅ Cambiar a self.
+                            print("❌ Error creando mapa: \(error)")
+                        }
+                    }
+                }
+                
             case .failure(let error):
-                errorMessage = "Error creando mapa: \(error.localizedDescription)"
-                print("❌ Error creando mapa: \(error)")
+                DispatchQueue.main.async {
+                    self.isCreatingEvent = false  // ✅ Cambiar a self.
+                    self.errorMessage = "Error creando evento: \(error.localizedDescription)"  // ✅ Cambiar a self.
+                    print("❌ Error creando evento: \(error)")
+                }
             }
-            
         }
     }
     
@@ -105,5 +142,5 @@ struct TemplateSelectionView: View {
 }
 
 #Preview {
-    TemplateSelectionView(eventId: "")
+    TemplateSelectionView()
 }

@@ -46,6 +46,28 @@ class EventViewModel: ObservableObject {
         }
     }
     
+    
+    func createEvent(_ event: Event, completion: @escaping (Result<String, Error>) -> Void) {
+        isLoading = true
+        errorMessage = ""
+        
+        eventService.createEvent(event) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                switch result {
+                case .success(let eventId):
+                    print("✅ Evento creado exitosamente: \(eventId)")
+                    // Recargar la lista de eventos para incluir el nuevo
+                    self?.fetchEvents()
+                    completion(.success(eventId))
+                case .failure(let error):
+                    self?.errorMessage = "Error creando evento: \(error.localizedDescription)"
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
     // Obtener todos los eventos
     func fetchEvents() {
         isLoading = true

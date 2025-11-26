@@ -12,15 +12,15 @@ struct StageView: View {
     
     var body: some View {
         ZStack{
-            Rectangle()
+            RoundedRectangle(cornerRadius: 8)
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: CGFloat(stageData.width),height: CGFloat(stageData.height))
                 .overlay{
-                    Rectangle()
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(.black,lineWidth: 2)
                 }
             Text(stageData.label)
-                .font(.system(size: 14, weight: .bold))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(.black)
                 .rotationEffect(.degrees(-45))
         }

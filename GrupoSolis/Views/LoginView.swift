@@ -19,47 +19,54 @@ struct LoginView: View {
     
     var body: some View {
         NavigationStack {
-            VStack{
-                TextField("email:",text: $email)
-                    .padding()
-                    .autocapitalization(.none)
-                    .keyboardType(.emailAddress)
-                SecureField("password:",text: $password)
-                    .padding()
-                    .autocapitalization(.none)
-                
-                if !errorMessage.isEmpty {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .font(.caption)
-                }
-                
-                
-                Button("Login"){
-                    authService.signIn(email: email, password: password){ result in
-                        switch result {
-                        case .success:
-                            errorMessage = ""
-                            print("Login exitoso")
-                            loggedIn = true
-                        case .failure(let error):
-                            errorMessage = "Error: \(error.localizedDescription)"
-                        }
+            VStack {
+                Spacer()
+                VStack{
+                    LoginTexfieldElement(label: "email", field: $email)
+                        .padding()
+                    LoginTexfieldElement(label: "password", field: $password)
+                        .padding()
+                        
+                    if !errorMessage.isEmpty {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
                     }
+                    
+                    
+                    Button{
+                        authService.signIn(email: email, password: password){ result in
+                            switch result {
+                            case .success:
+                                errorMessage = ""
+                                print("Login exitoso")
+                                loggedIn = true
+                            case .failure(let error):
+                                errorMessage = "Error: \(error.localizedDescription)"
+                            }
+                        }
+                    }label: {
+                        Text("Login")
+                            .foregroundStyle(.blue)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.white)
+                    .padding(.vertical)
+                    Button("Sign Up"){
+                        isSigningUp = true
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
-                Button("Sign Up"){
-                    isSigningUp = true
+                .sheet(isPresented: $isSigningUp){
+                    SigningUpView(authService: authService)
                 }
-                .buttonStyle(.borderedProminent)
+                .navigationDestination(isPresented: $loggedIn){
+                    ContentView()
+                }
+                .navigationBarBackButtonHidden()
+                Spacer()
             }
-            .sheet(isPresented: $isSigningUp){
-                SigningUpView(authService: authService)
-            }
-            .navigationDestination(isPresented: $loggedIn){
-                ContentView()
-            }
-            .navigationBarBackButtonHidden()
+            .background(.principalBlue)
         }
         
         

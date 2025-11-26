@@ -7,43 +7,33 @@
 
 import SwiftUI
 
-/*struct TestEventsView: View {
+struct TestEventsView: View {
     @StateObject private var eventVM = EventViewModel()
     @EnvironmentObject private var authService: AuthenticationService
     @State private var selectedEventId: String? = nil
+    @State private var isShowingTemplateSelection = false
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Text("Prueba de Eventos")
+                Text("Gestor de Eventos")
                     .font(.title)
                     .bold()
                 
-                // Botón para crear evento de prueba
-                Button("Crear Evento de Prueba") {
-                    eventVM.createTestEvent()
+                // ✅ NUEVO: Botón principal para crear evento desde plantilla
+                Button("Crear Nuevo Evento desde Plantilla") {
+                    isShowingTemplateSelection = true
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(eventVM.isLoading)
                 
-                // Botón para crear mapa de asientos de prueba
+                // Mostrar eventos existentes
                 if let eventId = selectedEventId ?? eventVM.events.first?.id {
-                    Button("Crear Mapa de Asientos para este Evento") {
-                        createTestSeatMapForEvent(eventId: eventId)
+                    NavigationLink("Ver Mapa de Asientos del Evento Seleccionado") {
+                        SeatMapView(seatMapId: getSeatMapIdForEvent(eventId: eventId))
+                            .environmentObject(authService)
                     }
                     .buttonStyle(.bordered)
-                    .disabled(eventVM.isLoading)
-                    
-                    NavigationLink("Ver Mapa de Asientos") {
-                        /*SeatMapView(seatMapId: getSeatMapIdForEvent(eventId: eventId))
-                            .environmentObject(authService)
-                         */
-                        /*SeatMapView(seatMapId: "t99kRZYFRASQXOM5lIIM") // ← Usa el ID que ves en los logs
-                            .environmentObject(authService)*/
-                        SeatMapView(seatMapId: eventId) // ← Usa el ID que ves en los logs
-                            .environmentObject(authService)
-                    }
-                    .buttonStyle(.borderedProminent)
                 }
                 
                 // Mostrar estado
@@ -60,55 +50,54 @@ import SwiftUI
                 }
                 
                 // Lista de eventos
-                List(eventVM.events) { event in
-                    VStack(alignment: .leading) {
-                        Text(event.name)
-                            .font(.headline)
-                        Text("Lugar: \(event.place)")
-                            .font(.subheadline)
-                        Text("Fecha: \(event.date, style: .date)")
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                VStack(alignment: .leading) {
+                    Text("Eventos Existentes (\(eventVM.events.count))")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    
+                    List(eventVM.events) { event in
+                        VStack(alignment: .leading) {
+                            Text(event.name)
+                                .font(.headline)
+                            Text("Lugar: \(event.place)")
+                                .font(.subheadline)
+                            Text("Fecha: \(event.date, style: .date)")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .onTapGesture {
+                            selectedEventId = event.id
+                            print("✅ Evento seleccionado: \(event.name) - ID: \(event.id ?? "nil")")
+                        }
+                        .background(selectedEventId == event.id ? Color.blue.opacity(0.1) : Color.clear)
                     }
-                    .onTapGesture {
-                        selectedEventId = event.id
-                    }
-                    .background(selectedEventId == event.id ? Color.blue.opacity(0.1) : Color.clear)
+                    .listStyle(PlainListStyle())
                 }
-                .listStyle(PlainListStyle())
                 
                 Spacer()
             }
+            .navigationBarItems(leading: Button("Logout"){authService.signOut()})
             .padding()
             .onAppear {
                 eventVM.fetchEvents()
             }
-        }
-    }
-    
-    private func createTestSeatMapForEvent(eventId: String) {
-        let seatMapVM = SeatMapViewModel()
-        seatMapVM.createTestSeatMapAndSeats(eventId: eventId) { result in
-            switch result {
-            case .success(let seatMapId):
-                print("Mapa creado con ID: \(seatMapId)")
-                // Guardar el seatMapId para usarlo después
-                UserDefaults.standard.set(seatMapId, forKey: "seatMapId_\(eventId)")
-            case .failure(let error):
-                print("Error: \(error)")
+            .sheet(isPresented: $isShowingTemplateSelection) {
+                TemplateSelectionView()
+                    .onDisappear {
+                        // Recargar eventos cuando se cierra el sheet (por si se creó uno nuevo)
+                        eventVM.fetchEvents()
+                    }
+                
             }
         }
     }
     
     private func getSeatMapIdForEvent(eventId: String) -> String {
-        // En una app real, esto vendría de la base de datos
-        // Por ahora usamos UserDefaults para guardar el ID temporalmente
         return UserDefaults.standard.string(forKey: "seatMapId_\(eventId)") ?? "test-map"
     }
 }
- */
 
-struct TestEventsView: View {
+/*struct TestEventsView: View {
     @StateObject private var eventVM = EventViewModel()
     @EnvironmentObject private var authService: AuthenticationService
     @State private var selectedEventId: String? = nil
@@ -199,7 +188,7 @@ struct TestEventsView: View {
     private func getSeatMapIdForEvent(eventId: String) -> String {
         return UserDefaults.standard.string(forKey: "seatMapId_\(eventId)") ?? "test-map"
     }
-}
+}*/
 
 #Preview {
     TestEventsView()

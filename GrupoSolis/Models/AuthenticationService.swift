@@ -50,7 +50,6 @@ class AuthenticationService : ObservableObject {
             }
             if let user = result?.user{
                 self.user = user
-                self.isAuthenticated = true
                 completion(.success(user))
             }
         }

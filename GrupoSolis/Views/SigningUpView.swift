@@ -16,6 +16,7 @@ struct SigningUpView: View {
     @State private var passwordConfirmation = ""
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var succesfullSigngUp = false
     var authService: AuthenticationService
     
     
@@ -28,6 +29,7 @@ struct SigningUpView: View {
                             .autocapitalization(.none)
                             .keyboardType(.emailAddress)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .autocorrectionDisabled()
                     }
                     Section(header: Text("Password")){
                         SecureField("Password",text: $password)
@@ -44,10 +46,12 @@ struct SigningUpView: View {
                                     case .success:
                                         alertMessage = "Usuario registrado con éxito"
                                         showAlert.toggle()
+                                        succesfullSigngUp = true
                                         
                                     case .failure:
-                                        alertMessage = "Error al registrar el usuario"
+                                        alertMessage = "Error al registrar el usuario: "
                                         showAlert.toggle()
+                                        succesfullSigngUp = false
                                     }
                                     
                                 }
@@ -55,6 +59,7 @@ struct SigningUpView: View {
                             }else{
                                alertMessage = "Las contraseñas no coinciden"
                                 showAlert.toggle()
+                                succesfullSigngUp = false
                             }
                         }
                         .buttonStyle(.borderedProminent)
@@ -65,7 +70,11 @@ struct SigningUpView: View {
             }
             .alert("",isPresented: $showAlert) {
                 Button("OK"){
-                    dismiss()
+                    if succesfullSigngUp {
+                        dismiss()
+                    } else {
+                        showAlert.toggle()
+                    }
                 }
             } message: {
                 Text(alertMessage)
@@ -73,6 +82,7 @@ struct SigningUpView: View {
             .padding()
             .navigationTitle("Registro")
             .navigationBarTitleDisplayMode(.inline)
+            
         }
         
     }
