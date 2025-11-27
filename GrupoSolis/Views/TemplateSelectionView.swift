@@ -19,15 +19,10 @@ struct TemplateSelectionView: View {
         NavigationView{
             VStack{
                 
-                VStack{
-                    Text("DEBUG:\(viewModel.templates.count) plantillas cargadas: ")
+                if !viewModel.templates.isEmpty {
+                    Text("Selecciona una plantilla")
                         .font(.caption)
-                        .foregroundStyle(.blue)
-                    if !viewModel.templates.isEmpty {
-                        Text("Selecciona una plantilla")
-                            .font(.caption)
-                            .foregroundStyle(.green)
-                    }
+                        .foregroundStyle(.green)
                 }
                 if viewModel.isLoading && viewModel.templates.isEmpty {
                     ProgressView("Cargando plantillas...")
@@ -61,7 +56,7 @@ struct TemplateSelectionView: View {
                     }
                     .padding(.vertical,4)
                     .onTapGesture {
-                        print("🎯 Plantilla seleccionada: \(template.name)")
+                        print("Plantilla seleccionada: \(template.name)")
                         createEventFromTemplate(template)
                     }
                 }
@@ -72,7 +67,7 @@ struct TemplateSelectionView: View {
                 dismiss()
             })
             .onAppear{
-                print("👀 TemplateSelectionView apareció")
+                print("TemplateSelectionView apareció")
                 if viewModel.templates.isEmpty && !viewModel.isLoading {
                     viewModel.loadTemplates()
                 }
@@ -94,38 +89,35 @@ struct TemplateSelectionView: View {
         )
         print("Creando evento desde plantilla...")
         
-        eventVM.createEvent(newEvent) { result in  // ✅ QUITAR [weak self]
+        eventVM.createEvent(newEvent) { result in
             switch result {
             case .success(let eventId):
-                print("✅ Evento creado con ID: \(eventId)")
+                print("Evento creado con ID: \(eventId)")
                 
-                // 2. Luego crear el mapa de asientos para este evento
                 self.viewModel.createFromTemplate(template: template, eventId: eventId) { seatMapResult in
                     DispatchQueue.main.async {
-                        self.isCreatingEvent = false  // ✅ Cambiar a self.
+                        self.isCreatingEvent = false
                         
                         switch seatMapResult {
                         case .success(let seatMapId):
-                            print("✅ Mapa creado con ID: \(seatMapId)")
-                            // Guardar ambos IDs para usarlos después
+                            print("Mapa creado con ID: \(seatMapId)")
                             UserDefaults.standard.set(eventId, forKey: "lastCreatedEventId")
                             UserDefaults.standard.set(seatMapId, forKey: "seatMapId_\(eventId)")
                             
-                            // Cerrar la vista
-                            self.dismiss()  // ✅ Cambiar a self.
+                            self.dismiss()
                             
                         case .failure(let error):
-                            self.errorMessage = "Error creando mapa: \(error.localizedDescription)"  // ✅ Cambiar a self.
-                            print("❌ Error creando mapa: \(error)")
+                            self.errorMessage = "Error creando mapa: \(error.localizedDescription)"
+                            print("Error creando mapa: \(error)")
                         }
                     }
                 }
                 
             case .failure(let error):
                 DispatchQueue.main.async {
-                    self.isCreatingEvent = false  // ✅ Cambiar a self.
-                    self.errorMessage = "Error creando evento: \(error.localizedDescription)"  // ✅ Cambiar a self.
-                    print("❌ Error creando evento: \(error)")
+                    self.isCreatingEvent = false
+                    self.errorMessage = "Error creando evento: \(error.localizedDescription)"
+                    print("Error creando evento: \(error)")
                 }
             }
         }

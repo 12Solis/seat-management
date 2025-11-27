@@ -17,14 +17,14 @@ class EventViewModel: ObservableObject {
     private let eventService = EventService()
     private var cancellables = Set<AnyCancellable>()
     
-    // Crear evento de prueba
+    
     func createTestEvent() {
         isLoading = true
         errorMessage = ""
         
         let testEvent = Event(
             name: "Concierto de Prueba",
-            date: Date().addingTimeInterval(86400), // Mañana
+            date: Date().addingTimeInterval(86400),
             place: "Estadio de Prueba"
         )
         
@@ -35,7 +35,7 @@ class EventViewModel: ObservableObject {
                 case .success(let eventId):
                     print("✅ Evento creado con ID: \(eventId)")
                     self?.errorMessage = "Evento creado exitosamente! ID: \(eventId)"
-                    // Opcional: cargar eventos nuevamente para incluir el nuevo
+                    
                     self?.fetchEvents()
                     
                 case .failure(let error):
@@ -57,7 +57,7 @@ class EventViewModel: ObservableObject {
                 switch result {
                 case .success(let eventId):
                     print("✅ Evento creado exitosamente: \(eventId)")
-                    // Recargar la lista de eventos para incluir el nuevo
+                    
                     self?.fetchEvents()
                     completion(.success(eventId))
                 case .failure(let error):
@@ -68,7 +68,7 @@ class EventViewModel: ObservableObject {
         }
     }
     
-    // Obtener todos los eventos
+    
     func fetchEvents() {
         isLoading = true
         

@@ -107,53 +107,52 @@ class TemplateService: ObservableObject {
             .order(by: "name")
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("❌ Error en consulta Firebase: \(error.localizedDescription)")
+                    print("Error en consulta Firebase: \(error.localizedDescription)")
                     completion(.failure(error))
                     return
                 }
                 
-                print("📊 Snapshots recibidos: \(snapshot?.documents.count ?? 0) documentos")
                 
                 var templates: [SeatMapTemplate] = []
                 
                 for document in snapshot?.documents ?? [] {
-                    print("📄 Procesando documento: \(document.documentID)")
+                    print("Procesando documento: \(document.documentID)")
                     let data = document.data()
                     
                     // Debug: mostrar todos los campos del documento
-                    print("🔍 Campos del documento: \(data.keys.sorted())")
+                    print("Campos del documento: \(data.keys.sorted())")
                     
                     do {
-                        print("🔍 Intentando decodificar template...")
+                        print("Intentando decodificar template...")
                         let template = try document.data(as: SeatMapTemplate.self)
                         templates.append(template)
-                        print("✅ Template decodificado exitosamente: \(template.name)")
-                        print("✅ StageData: \(template.stageData != nil ? "PRESENTE" : "AUSENTE")")
-                        print("✅ Secciones: \(template.layoutData.sections.count)")
+                        print("Template decodificado exitosamente: \(template.name)")
+                        print("StageData: \(template.stageData != nil ? "PRESENTE" : "AUSENTE")")
+                        print("Secciones: \(template.layoutData.sections.count)")
                         
                     } catch {
-                        print("❌ ERROR en decodificación: \(error)")
-                        print("❌ Error localizado: \(error.localizedDescription)")
+                        print("ERROR en decodificación: \(error)")
+                        print("Error localizado: \(error.localizedDescription)")
                         
                         // Debug más detallado del error
                         if let decodingError = error as? DecodingError {
                             switch decodingError {
                             case .keyNotFound(let key, let context):
-                                print("❌ Key no encontrada: \(key), contexto: \(context)")
+                                print("Key no encontrada: \(key), contexto: \(context)")
                             case .typeMismatch(let type, let context):
-                                print("❌ Type mismatch: \(type), contexto: \(context)")
+                                print("Type mismatch: \(type), contexto: \(context)")
                             case .valueNotFound(let type, let context):
-                                print("❌ Value no encontrado: \(type), contexto: \(context)")
+                                print("Value no encontrado: \(type), contexto: \(context)")
                             case .dataCorrupted(let context):
-                                print("❌ Data corrupta: \(context)")
+                                print("Data corrupta: \(context)")
                             @unknown default:
-                                print("❌ Error desconocido")
+                                print("Error desconocido")
                             }
                         }
                     }
                 }
                 
-                print("✅ Templates finales: \(templates.count)")
+                print("Templates finales: \(templates.count)")
                 completion(.success(templates))
             }
     }
@@ -189,19 +188,19 @@ class TemplateService: ObservableObject {
     
     // Función temporal de test
     func testFirebaseConnection() {
-        print("🧪 Probando conexión con Firebase...")
+        print("Probando conexión con Firebase...")
         
         db.collection("seatMapTemplates").getDocuments { snapshot, error in
             if let error = error {
-                print("❌ Conexión fallida: \(error)")
+                print("Conexión fallida: \(error)")
                 return
             }
             
-            print("✅ Conexión exitosa. Documentos encontrados: \(snapshot?.documents.count ?? 0)")
+            print("Conexión exitosa. Documentos encontrados: \(snapshot?.documents.count ?? 0)")
             
             snapshot?.documents.forEach { doc in
-                print("📋 Documento: \(doc.documentID)")
-                print("📋 Datos completos: \(doc.data())")
+                print("Documento: \(doc.documentID)")
+                print("Datos completos: \(doc.data())")
             }
         }
     }

@@ -23,8 +23,8 @@ struct SectionView: View{
     }
     
     var body: some View {
-        VStack(alignment:.leading,spacing: 8){
-            Text("Sección \(section+1)")
+        VStack(alignment:.center ,spacing: 8){
+            Text("Sección \(getSectionName(section))")
                 .font(.system(size: 14,weight: .bold))
                 .foregroundStyle(.white)
                 .padding(.horizontal,8)
@@ -32,12 +32,17 @@ struct SectionView: View{
                 .background(getSectionColor(section))
                 .cornerRadius(4)
            
-            VStack(alignment:.leading,spacing: 2){
-                ForEach(uniqueRows,id: \.self){actualRow in
+            VStack(alignment:
+                    section == 0 ? .trailing:
+                    section == 4 ? .leading:
+                    .center
+                   ,spacing: 2){
+                ForEach(uniqueRows.reversed(),id: \.self){actualRow in
                     RowView(
                         row: actualRow,
                         seats: seatsInRow(actualRow),
-                        onSeatTap: onSeatTap
+                        onSeatTap: onSeatTap,
+                        sectionName: getSectionName(section)
                     )
                 }
             }
@@ -59,17 +64,21 @@ struct RowView: View {
     let row: Int
     let seats: [Seat]
     let onSeatTap: (Seat) -> Void
+    var sectionName:String
     
     var body: some View {
         HStack(spacing: 2){
-            Text("Fila \(row)")
+            Text("F \(row)")
                 .font(.system(size: 10))
-                .frame(width: 35,alignment: .leading)
+                .frame(width: 35,alignment:
+                        sectionName == "A" ? .trailing :
+                        sectionName == "E" ? .leading :
+                        .center)
                 .foregroundStyle(.gray)
             ForEach(seats){seat in
                 SeatView(seat: seat, onTap: onSeatTap)
             }
-            Spacer()
+            
         }
     }
 }
@@ -98,21 +107,23 @@ struct SeatMapView: View {
     @State private var stageData: StageData? = nil
     
     private func loadStageData() {
-        // Datos del escenario basados en tu plantilla
+        
         self.stageData = StageData(
-            width: 180,
-            height: 180,
-            positionX: 500, // Centro del área ampliada
+            width: 680,
+            height: 680,
+            positionX: 500,
             positionY: 400,
-            label: "RING"
+            label: "ESCENARIO"
         )
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header mejorado
+            
             VStack(spacing: 8) {
                 HStack {
+                    Spacer()
+                    
                     VStack(alignment: .leading) {
                         Text("Mapa de Asientos")
                             .font(.title2)
@@ -121,21 +132,10 @@ struct SeatMapView: View {
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
-                    Spacer()
                     
-                    // Controles de zoom
-                    HStack(spacing: 15) {
-                        Button("Reset") {
-                            withAnimation(.spring()) {
-                                // Aquí resetearíamos el zoom si usáramos el ZoomableViewModel
-                            }
-                        }
-                        .font(.caption)
-                        .buttonStyle(.bordered)
-                    }
+                    Spacer()
                 }
                 
-                // Leyenda
                 HStack(spacing: 20) {
                     LegendItem(color: .green, text: "Disponible")
                     LegendItem(color: .red, text: "Vendido")
@@ -148,10 +148,8 @@ struct SeatMapView: View {
             .background(Color(.systemBackground))
             .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
             
-            // Mapa con zoom y pan
-            ZoomableScrollView {
+            ZoomableScrollView() {
                 ZStack {
-                    // Escenario en el centro
                     if let stageData = stageData {
                         StageView(stageData: stageData)
                             .position(
@@ -160,7 +158,6 @@ struct SeatMapView: View {
                             )
                     }
                     
-                    // Secciones dispuestas alrededor del escenario
                     ForEach(0..<numberOfSections, id: \.self) { section in
                         SectionContainerView(
                             section: section,
@@ -169,15 +166,15 @@ struct SeatMapView: View {
                                 if let userId = authService.user?.uid {
                                     viewModel.toggleSeatStatus(seat, userId: userId)
                                 }
-                            }
+                            },rotation: getRotationForSection(section)
                         )
                         .position(getPositionForSection(section))
                     }
                 }
-                .frame(width: 1000, height: 800) // Área grande para el zoom
+                .frame(width: 1500, height: 1600)
             }
             
-            // Estados de carga/error
+            
             if viewModel.isLoading {
                 ProgressView("Sincronizando asientos...")
                     .padding()
@@ -203,54 +200,86 @@ struct SeatMapView: View {
         return sections.count
     }
     
-    // Posiciones mejoradas para evitar amontonamiento
     private func getPositionForSection(_ section: Int) -> CGPoint {
-        let centerX: CGFloat = 500
-        let centerY: CGFloat = 400
-        let baseRadius: CGFloat = 280 // Radio base aumentado
+        guard let stageData = stageData else {
+            return CGPoint(x: 400, y: 500)
+        }
         
-        // Ángulos específicos para 5 secciones
-        let sectionAngles: [Double] = [
-            .pi * 1.25,    // A: Superior izquierda (225°)
-            .pi * 1.75,    // B: Superior (270°)
-            .pi * 0.25,    // C: Superior derecha (45°)
-            .pi * 0.75,    // D: Inferior derecha (135°)
-            .pi * 1.5      // E: Inferior izquierda (180°)
-        ]
+        let centerX = CGFloat(stageData.positionX)
+        let centerY = CGFloat(stageData.positionY)
+        let stageWidth = CGFloat(stageData.width)
+        let stageHeight = CGFloat(stageData.height)
         
-        if section < sectionAngles.count {
-            let angle = sectionAngles[section]
-            let radius = baseRadius + CGFloat(section) * 20 // Espaciado progresivo
-            
-            let x = centerX + radius * cos(angle)
-            let y = centerY + radius * sin(angle)
-            return CGPoint(x: x, y: y)
-        } else {
-            // Para secciones adicionales
-            let angle = Double(section) * (2 * .pi / Double(numberOfSections))
-            let x = centerX + baseRadius * cos(angle)
-            let y = centerY + baseRadius * sin(angle)
-            return CGPoint(x: x, y: y)
+        let horizontalDistance: CGFloat = 120
+        let verticalDistance: CGFloat = 120
+        
+        switch section{
+        case 0:
+            return CGPoint(
+                x: centerX + stageWidth / 2 + horizontalDistance + 143,
+                y: centerY - 360
+            )
+        case 1:
+            return CGPoint(
+                x: centerX,
+                y: centerY - stageWidth/2 - verticalDistance - 100
+            )
+        case 2:
+            return CGPoint(
+                x: centerX - stageWidth / 2 - horizontalDistance - 143,
+                y: centerY - 20
+            )
+        case 3:
+            return CGPoint(
+                x: centerX,
+                y: centerY + stageWidth/2 + verticalDistance + 100
+            )
+        case 4:
+            return CGPoint(
+                x: centerX + stageWidth / 2 + horizontalDistance + 143,
+                y: centerY + 330
+            )
+        default:
+            return CGPoint(x: 400, y: 500)
+        }
+    }
+    
+    private func getRotationForSection(_ section: Int) -> Angle {
+        switch section{
+        case 0:
+            return .degrees(90)
+        case 1:
+            return .degrees(0)
+        case 2:
+            return .degrees(-90)
+        case 3:
+            return .degrees(180)
+        case 4:
+            return .degrees(90)
+        default:
+            return .degrees(0)
         }
     }
 }
 
-// Nueva vista contenedora para secciones
+
 struct SectionContainerView: View {
     let section: Int
     let seats: [Seat]
     let onSeatTap: (Seat) -> Void
+    let rotation: Angle
     
     var body: some View {
         VStack(spacing: 8) {
             SectionView(section: section, seats: seats, onSeatTap: onSeatTap)
         }
-        .padding(12)
+        .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
         )
+        .rotationEffect(rotation)
     }
 }
 #Preview {

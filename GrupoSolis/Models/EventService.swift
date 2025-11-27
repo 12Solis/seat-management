@@ -139,19 +139,6 @@ class EventService: ObservableObject {
                     print("🔧 Creado asiento: \(seat.id)")
                 }
             }
-            /*for row in section.rows{
-                for seatNumber in 1...row.seatsCount{
-                    let seat = Seat(
-                        seatMapId: seatMapId,
-                        section: sectionIndex,
-                        row: Int(row.name) ?? 0,
-                        number: seatNumber,
-                        status: .available,
-                        lastUpdatedBy: ""
-                    )
-                    seats.append(seat)
-                }
-            }*/
         }
         print("🔧 Total de asientos a crear: \(seats.count)")
         
