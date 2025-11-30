@@ -9,9 +9,14 @@ import SwiftUI
 
 struct TestEventsView: View {
     @StateObject private var eventVM = EventViewModel()
+    @State private var eventService = EventService()
     @EnvironmentObject private var authService: AuthenticationService
+    
     @State private var selectedEventId: String? = nil
+    @State private var selectedSeatMapId: String? = nil
     @State private var isShowingTemplateSelection = false
+    @State private var isNavigatingToSeatMap = false
+    @State private var isLoadingMap = false
     
     var body: some View {
         NavigationView {
@@ -26,14 +31,19 @@ struct TestEventsView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(eventVM.isLoading)
                 
-                if let eventId = selectedEventId ?? eventVM.events.first?.id {
+               /* if let eventId = selectedEventId ?? eventVM.events.first?.id {
                     NavigationLink("Ver Mapa de Asientos del Evento Seleccionado") {
                         SeatMapView(seatMapId: getSeatMapIdForEvent(eventId: eventId))
                             .environmentObject(authService)
                     }
                     .buttonStyle(.bordered)
                 }
-                
+                */
+                NavigationLink(
+                    destination: SeatMapView(seatMapId: selectedSeatMapId ?? "").environmentObject(authService),
+                    isActive: $isNavigatingToSeatMap,
+                    
+                ){EmptyView()}
                
                 if eventVM.isLoading {
                     ProgressView("Cargando...")
@@ -63,8 +73,9 @@ struct TestEventsView: View {
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
+                        .contentShape(Rectangle())
                         .onTapGesture {
-                            selectedEventId = event.id
+                            fetchAndOpenMap(for: event)
                             print("Evento seleccionado: \(event.name) - ID: \(event.id ?? "nil")")
                         }
                         .background(selectedEventId == event.id ? Color.blue.opacity(0.1) : Color.clear)
@@ -90,8 +101,27 @@ struct TestEventsView: View {
         }
     }
     
-    private func getSeatMapIdForEvent(eventId: String) -> String {
-        return UserDefaults.standard.string(forKey: "seatMapId_\(eventId)") ?? "test-map"
+    private func fetchAndOpenMap(for event: Event) {
+        guard let eventId = event.id else { return }
+        isLoadingMap = true
+        
+        eventService.fetchSeatMaps(forEventId: eventId){ result in
+            DispatchQueue.main.async {
+                self.isLoadingMap = false
+                switch result{
+                case .success(let maps):
+                    if let firstMap = maps.first, let mapId = firstMap.id {
+                        print("Mapa encontrado en la nube: \(mapId)")
+                        self.selectedSeatMapId = mapId
+                        self.isNavigatingToSeatMap = true
+                    } else {
+                        print("Mapa no encontrado en Firebase")
+                    }
+                case .failure(let error):
+                    print("Error al obtener mapas: \(error)")
+                }
+            }
+        }
     }
 }
 

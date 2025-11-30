@@ -144,7 +144,8 @@ class EventService: ObservableObject {
         
         let batch = db.batch()
         for seat in seats{
-            let ref = db.collection("seats").document(seat.id)
+            let uniqueSeatID = "\(seatMapId)_\(seat.section)-\(seat.row)-\(seat.number)"
+            let ref = db.collection("seats").document(uniqueSeatID)
             do{
                 try batch.setData(from: seat, forDocument: ref)
             } catch {
