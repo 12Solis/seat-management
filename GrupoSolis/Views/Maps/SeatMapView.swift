@@ -110,6 +110,9 @@ struct SeatMapView: View {
             viewModel.loadSeatsForMap(seatMapId: seatMapId)
             loadStageData()
         }
+        .onDisappear{
+            viewModel.stopListening()
+        }
     }
     
     private var numberOfSections: Int {

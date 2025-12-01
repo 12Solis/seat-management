@@ -79,8 +79,8 @@ class EventService: ObservableObject {
     
     //MARK: opearciones de asiento
     
-    func listenToSeats(seatMapId:String , completion: @escaping ([Seat]) -> Void){
-        db.collection("seats")
+    func listenToSeats(seatMapId:String , completion: @escaping ([Seat]) -> Void) -> ListenerRegistration? {
+        return db.collection("seats")
             .whereField("seatMapId", isEqualTo: seatMapId)
             .addSnapshotListener{snapshot,error in
                 if let error = error{
@@ -95,10 +95,15 @@ class EventService: ObservableObject {
                 completion(seats)
             }
     }
-    
-    func updateSeatStatus(_ seat: Seat, newStatus: SeatStatus, userId: String, completion: @escaping(Result<Void,Error>)->Void){
-        var updatedSeat = seat
-        updatedSeat = Seat(
+    func updateSeatStatus(_ seat: Seat, newStatus: SeatStatus, userId: String, completion: @escaping(Result<Void,Error>)->Void) {
+
+        guard let seatDocId = seat.id else {
+            completion(.failure(NSError(domain: "Error de ID", code: -1, userInfo: [NSLocalizedDescriptionKey: "El asiento no tiene ID de documento"])))
+            return
+        }
+
+        let updatedSeat = Seat(
+            id: seatDocId,
             seatMapId: seat.seatMapId,
             section: seat.section,
             row: seat.row,
@@ -107,58 +112,58 @@ class EventService: ObservableObject {
             lastUpdatedBy: userId
         )
         
-        do{
-            try db.collection("seats").document(seat.id).setData(from: updatedSeat)
+        do {
+            try db.collection("seats").document(seatDocId).setData(from: updatedSeat)
             completion(.success(()))
-        } catch{
+        } catch {
             completion(.failure(error))
         }
     }
-    
+
     func initializeSeatsFromMap(seatMap: SeatsMap, completion: @escaping(Result<Void,Error>)->Void){
         
         guard let seatMapId = seatMap.id else {
-            completion(.failure(NSError(domain: "SeatsMap sin ID", code: 0)))
+            completion(.failure(NSError(domain: "Sin ID", code: 0)))
             return
         }
-        var seats: [Seat] = []
-        
-        for(sectionIndex,section) in seatMap.layoutData.sections.enumerated(){
-            for(rowIndex,row) in section.rows.enumerated(){
-                print("Procesando sección \(sectionIndex), fila \(rowIndex), asientos: \(row.seatsCount)")
-                for seatNumber in 1...row.seatsCount{
+
+        let batch = db.batch()
+        var count = 0
+
+        for (sectionIndex, section) in seatMap.layoutData.sections.enumerated() {
+            for row in section.rows {
+                let rowNumber = Int(row.name) ?? 0
+                
+                for seatNumber in 1...row.seatsCount {
+
+                    let customDocID = "\(sectionIndex)-\(rowNumber)-\(seatNumber)"
                     let seat = Seat(
                         seatMapId: seatMapId,
                         section: sectionIndex,
-                        row: Int(row.name) ?? 0,
+                        row: rowNumber,
                         number: seatNumber,
                         status: .available,
-                        lastUpdatedBy: ""
+                        lastUpdatedBy: nil
                     )
-                    seats.append(seat)
-                    print("🔧 Creado asiento: \(seat.id)")
+                    let uniqueDocId = "\(seatMapId)_\(customDocID)"
+                    
+                    let ref = db.collection("seats").document(uniqueDocId)
+                    
+                    do {
+                        try batch.setData(from: seat, forDocument: ref)
+                        count += 1
+                    } catch {
+                        print("Error codificando asiento: \(error)")
+                    }
                 }
             }
         }
-        print("Total de asientos a crear: \(seats.count)")
         
-        let batch = db.batch()
-        for seat in seats{
-            let uniqueSeatID = "\(seatMapId)_\(seat.section)-\(seat.row)-\(seat.number)"
-            let ref = db.collection("seats").document(uniqueSeatID)
-            do{
-                try batch.setData(from: seat, forDocument: ref)
-            } catch {
-                completion(.failure(error))
-                return
-            }
-            
-        }
-        
-        batch.commit{ error in
-            if let error = error{
+        batch.commit { error in
+            if let error = error {
                 completion(.failure(error))
             } else {
+                print("Se crearon \(count) asientos exitosamente")
                 completion(.success(()))
             }
         }

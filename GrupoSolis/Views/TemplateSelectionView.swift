@@ -15,6 +15,11 @@ struct TemplateSelectionView: View {
     @State private var isCreatingEvent = false
     @State private var errorMessage = ""
     
+    @State private var isFormPresented = false
+    @State private var eventName = ""
+    @State private var eventDate = Date()
+    @State private var eventPlace = ""
+    
     var body: some View {
         NavigationView{
             VStack{
@@ -60,6 +65,9 @@ struct TemplateSelectionView: View {
                         createEventFromTemplate(template)
                     }
                 }
+                Button("template"){
+                    isFormPresented.toggle()
+                }
                 
             }
             .navigationTitle("Seleccionar plantilla")
@@ -71,6 +79,9 @@ struct TemplateSelectionView: View {
                 if viewModel.templates.isEmpty && !viewModel.isLoading {
                     viewModel.loadTemplates()
                 }
+            }
+            .sheet(isPresented: $isFormPresented){
+                CreateEventFormView(templateName: "Plaza de toros", isPresented: $isFormPresented, name: $eventName, date: $eventDate, location: $eventPlace)
             }
             
         }
@@ -101,8 +112,6 @@ struct TemplateSelectionView: View {
                         switch seatMapResult {
                         case .success(let seatMapId):
                             print("Mapa creado con ID: \(seatMapId)")
-                            UserDefaults.standard.set(eventId, forKey: "lastCreatedEventId")
-                            UserDefaults.standard.set(seatMapId, forKey: "seatMapId_\(eventId)")
                             
                             self.dismiss()
                             

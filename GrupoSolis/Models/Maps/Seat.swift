@@ -9,17 +9,18 @@ import Foundation
 import FirebaseFirestore
 
 struct Seat: Codable, Identifiable {
-    var id : String {"\(section)-\(row)-\(number)"}
+    @DocumentID var id: String?
     
     let seatMapId: String
     let section: Int
     let row: Int
     let number: Int
-    let status: SeatStatus
-    let lastUpdate: Date?
-    let lastUpdatedBy: String?
+    var status: SeatStatus
+    var lastUpdate: Date?
+    var lastUpdatedBy: String?
     
-    init(seatMapId: String, section: Int, row: Int, number: Int, status: SeatStatus, lastUpdatedBy: String?) {
+    init(id: String? = nil, seatMapId: String, section: Int, row: Int, number: Int, status: SeatStatus, lastUpdatedBy: String?) {
+        self.id = id
         self.seatMapId = seatMapId
         self.section = section
         self.row = row
@@ -30,7 +31,7 @@ struct Seat: Codable, Identifiable {
     }
 }
 
-enum SeatStatus: String,Codable {
+enum SeatStatus: String, Codable {
     case available = "available"
     case sold = "sold"
     case reserved = "reserved"

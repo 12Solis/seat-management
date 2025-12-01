@@ -19,7 +19,7 @@ struct TestEventsView: View {
     @State private var isLoadingMap = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 Text("Gestor de Eventos")
                     .font(.title)
@@ -31,20 +31,6 @@ struct TestEventsView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(eventVM.isLoading)
                 
-               /* if let eventId = selectedEventId ?? eventVM.events.first?.id {
-                    NavigationLink("Ver Mapa de Asientos del Evento Seleccionado") {
-                        SeatMapView(seatMapId: getSeatMapIdForEvent(eventId: eventId))
-                            .environmentObject(authService)
-                    }
-                    .buttonStyle(.bordered)
-                }
-                */
-                NavigationLink(
-                    destination: SeatMapView(seatMapId: selectedSeatMapId ?? "").environmentObject(authService),
-                    isActive: $isNavigatingToSeatMap,
-                    
-                ){EmptyView()}
-               
                 if eventVM.isLoading {
                     ProgressView("Cargando...")
                 }
@@ -87,8 +73,13 @@ struct TestEventsView: View {
             }
             .navigationBarItems(leading: Button("Logout"){authService.signOut()})
             .padding()
-            .onAppear {
-                eventVM.fetchEvents()
+            .navigationDestination(isPresented: $isNavigatingToSeatMap) {
+                if let mapId = selectedSeatMapId {
+                    SeatMapView(seatMapId: mapId)
+                        .environmentObject(authService)
+                } else {
+                    Text("Error: No se encontró el ID del mapa")
+                }
             }
             .sheet(isPresented: $isShowingTemplateSelection) {
                 TemplateSelectionView()
@@ -96,8 +87,11 @@ struct TestEventsView: View {
                         
                         eventVM.fetchEvents()
                     }
-                
             }
+            
+        }
+        .onAppear {
+            eventVM.fetchEvents()
         }
     }
     

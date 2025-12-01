@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseFirestore
 import Combine
 
 class SeatMapViewModel: ObservableObject {
@@ -16,13 +17,22 @@ class SeatMapViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var selectedSeat: Seat?
     
+    private var listenerRegistration: ListenerRegistration?
     private let eventService = EventService()
     private let cancellables = Set<AnyCancellable>()
     
     func loadSeatsForMap(seatMapId:String){
         isLoading = true
         
-        eventService.listenToSeats(seatMapId: seatMapId){ [weak self] seats in
+        self.listenerRegistration?.remove()
+        self.listenerRegistration = eventService.listenToSeats(seatMapId: seatMapId) { [weak self] newSeats in
+            DispatchQueue.main.async {
+                self?.seats = newSeats
+                self?.isLoading = false
+                print("Asientos cargados: \(newSeats.count)")
+            }
+        }
+        /*eventService.listenToSeats(seatMapId: seatMapId){ [weak self] seats in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 self?.seats = seats
@@ -41,7 +51,12 @@ class SeatMapViewModel: ObservableObject {
                 }
                 
             }
-        }
+        }*/
+    }
+    func stopListening(){
+        listenerRegistration?.remove()
+        listenerRegistration = nil
+        seats = []
     }
     
     func toggleSeatStatus(_ seat: Seat, userId:String){

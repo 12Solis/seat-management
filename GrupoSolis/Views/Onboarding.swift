@@ -27,4 +27,5 @@ struct Onboarding: View {
 
 #Preview {
     Onboarding()
+        .environmentObject(AuthenticationService())
 }
