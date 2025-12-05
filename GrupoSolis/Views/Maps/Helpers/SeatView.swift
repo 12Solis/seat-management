@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SeatView: View {
     let seat: Seat
+    let isSelected: Bool
     let onTap: (Seat) -> Void
     var body: some View {
         Circle()
@@ -29,6 +30,8 @@ struct SeatView: View {
     }
     
     private var seatColor: Color {
+        if isSelected{return .blue}
+        
         switch seat.status {
         case .available:
             return .green
@@ -39,6 +42,8 @@ struct SeatView: View {
         }
     }
     private var textColor: Color {
+        if isSelected{return .white}
+        
         switch seat.status {
         case .available:
             return .black

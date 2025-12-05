@@ -11,6 +11,7 @@ import Combine
 
 class TemplateService: ObservableObject {
     private let db = Firestore.firestore()
+    private let eventService = EventService()
     
     func fetchTemplates(completion: @escaping (Result<[SeatMapTemplate], Error>) -> Void) {
         print("Intentando cargar plantillas desde Firebase...")
@@ -69,21 +70,19 @@ class TemplateService: ObservableObject {
             }
     }
     
-    func createSeatMapFromTemplate(template: SeatMapTemplate, eventId: String, completion: @escaping (Result<String, Error>) -> Void) {
-        let seatMap = SeatsMap(
+    func createSeatMapFromTemplate(template: SeatMapTemplate, eventId: String, prices: [Int : [Int : Double]]?, completion: @escaping (Result<String, Error>) -> Void) {
+        var seatMap = SeatsMap(
             eventId: eventId,
             name: template.name,
             layoutData: template.layoutData
         )
         
-        let eventService = EventService()
         eventService.createSeatMap(seatMap) { result in
             switch result {
             case .success(let seatMapId):
-                var seatMapWithId = seatMap
-                seatMapWithId.id = seatMapId
+                seatMap.id = seatMapId
                 
-                eventService.initializeSeatsFromMap(seatMap: seatMapWithId) { seatResult in
+                self.eventService.initializeSeatsFromMap(seatMap: seatMap, prices: prices) { seatResult in
                     switch seatResult {
                     case .success:
                         completion(.success(seatMapId))

@@ -49,10 +49,10 @@ class TemplateViewModel: ObservableObject {
         }
     }
     
-    func createFromTemplate(template: SeatMapTemplate, eventId: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func createFromTemplate(template: SeatMapTemplate, eventId: String,prices: [Int : [Int : Double]]? ,completion: @escaping (Result<String, Error>) -> Void) {
         isLoading = true
         
-        templateService.createSeatMapFromTemplate(template: template, eventId: eventId) { [weak self] result in
+        templateService.createSeatMapFromTemplate(template: template, eventId: eventId, prices:prices) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 completion(result)

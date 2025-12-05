@@ -10,6 +10,7 @@ import SwiftUI
 struct RowView: View {
     let row: Int
     let seats: [Seat]
+    let selectedSeats: [Seat]
     let onSeatTap: (Seat) -> Void
     var sectionName:String
     
@@ -23,7 +24,9 @@ struct RowView: View {
                         .center)
                 .foregroundStyle(.gray)
             ForEach(seats){seat in
-                SeatView(seat: seat, onTap: onSeatTap)
+                SeatView(seat: seat,
+                         isSelected: selectedSeats.contains(where: { $0.id == seat.id }) ,
+                         onTap: onSeatTap)
             }
             
         }

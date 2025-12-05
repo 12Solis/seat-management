@@ -11,6 +11,7 @@ struct SectionView: View {
     let section : Int
     let seats : [Seat]
     let onSeatTap: (Seat) -> Void
+    let selectedSeats: [Seat]
     
     private var uniqueRows: [Int] {
         let rows = Set(seats.map { $0.row })
@@ -40,6 +41,7 @@ struct SectionView: View {
                     RowView(
                         row: actualRow,
                         seats: seatsInRow(actualRow),
+                        selectedSeats: selectedSeats,
                         onSeatTap: onSeatTap,
                         sectionName: getSectionName(section)
                     )
@@ -63,10 +65,11 @@ struct SectionContainerView: View {
     let seats: [Seat]
     let onSeatTap: (Seat) -> Void
     let rotation: Angle
+    let selectedSeats: [Seat]
     
     var body: some View {
         VStack(spacing: 8) {
-            SectionView(section: section, seats: seats, onSeatTap: onSeatTap)
+            SectionView(section: section, seats: seats, onSeatTap: onSeatTap, selectedSeats: selectedSeats)
         }
         .padding(8)
         .background(

@@ -12,6 +12,7 @@ struct PlazaSccMapView: View {
     @ObservedObject var viewModel: SeatMapViewModel
     @EnvironmentObject private var authService: AuthenticationService
     let stageData: StageData?
+    @Binding var selectedSeats: [Seat]
     
     var body: some View {
         ForEach(0..<numberOfSections, id: \.self) { section in
@@ -19,10 +20,20 @@ struct PlazaSccMapView: View {
                 section: section,
                 seats: viewModel.seatsInSection(section),
                 onSeatTap: { seat in
-                    if let userId = authService.user?.uid {
-                        viewModel.toggleSeatStatus(seat, userId: userId)
+                    guard seat.status == .available else { return }
+                            
+                    if let index = selectedSeats.firstIndex(where: { $0.id == seat.id }) {
+                        selectedSeats.remove(at: index)
+                        print("Asiento \(seat.number) deseleccionado (Local)")
+                    } else {
+                        var seatToSelect = seat
+                        seatToSelect.tempStatus = .sold
+                        selectedSeats.append(seatToSelect)
+                        print("Asiento \(seat.number) seleccionado (Local)")
                     }
-                },rotation: getRotationForSection(section)
+                    
+                },rotation: getRotationForSection(section),
+                selectedSeats: selectedSeats
             )
             .position(getPositionForSection(section))
         }

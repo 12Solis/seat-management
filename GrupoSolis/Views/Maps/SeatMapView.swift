@@ -8,28 +8,19 @@
 import SwiftUI
 import FirebaseAuth
 
-struct LegendItem: View {
-    let color: Color
-    let text: String
-    
-    var body: some View {
-        HStack(spacing: 6) {
-            Rectangle()
-                .fill(color)
-                .frame(width: 15, height: 15)
-                .cornerRadius(3)
-            Text(text)
-                .font(.system(size: 10))
-        }
-    }
-}
- 
-
 struct SeatMapView: View {
-    let seatMapId: String
     @StateObject private var viewModel = SeatMapViewModel()
+    @StateObject private var eventService = EventService()
     @EnvironmentObject private var authService: AuthenticationService
+    
+    let seatMapId: String
+    let eventName: String
+    let eventDate: Date
+    
+    @State private var selectedSeats: [Seat] = []
     @State private var stageData: StageData? = nil
+    
+    @State private var errorMessage = ""
     
     private func loadStageData() {
         
@@ -46,18 +37,16 @@ struct SeatMapView: View {
         VStack(spacing: 0) {
             
             VStack(spacing: 8) {
-                HStack {
+                HStack{
                     Spacer()
-                    
-                    VStack(alignment: .leading) {
-                        Text("Mapa de Asientos")
-                            .font(.title2)
+                    VStack(alignment: .center,spacing: 10){
+                        Text(eventName)
+                            .font(.title)
                             .bold()
-                        Text("\(viewModel.seats.count) asientos • \(numberOfSections) secciones")
-                            .font(.caption)
+                        Text(eventDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day(.twoDigits).hour().minute().locale(Locale(identifier: "es_MX"))))
+                            .font(.headline)
                             .foregroundColor(.gray)
                     }
-                    
                     Spacer()
                 }
                 
@@ -65,8 +54,6 @@ struct SeatMapView: View {
                     LegendItem(color: .green, text: "Disponible")
                     LegendItem(color: .red, text: "Vendido")
                     LegendItem(color: .orange, text: "Reservado")
-                    LegendItem(color: .blue, text: "Sección A")
-                    LegendItem(color: .purple, text: "Sección B")
                 }
             }
             .padding()
@@ -84,7 +71,7 @@ struct SeatMapView: View {
                             .offset(x:150,y: 300)
                     }
  
-                    PlazaSccMapView(viewModel: viewModel, stageData: stageData)
+                    PlazaSccMapView(viewModel: viewModel, stageData: stageData,selectedSeats: $selectedSeats)
                         .offset(x:150, y:300)
                 }
                 .frame(width: 1500, height: 1600)
@@ -106,6 +93,14 @@ struct SeatMapView: View {
         }
         .navigationTitle("Mapa de Asientos")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(){
+            ToolbarItem(placement:.confirmationAction){
+                Button("Guardar"){
+                    updateSelectedSeats()
+                }
+                .disabled(selectedSeats.isEmpty)
+            }
+        }
         .onAppear {
             viewModel.loadSeatsForMap(seatMapId: seatMapId)
             loadStageData()
@@ -119,9 +114,42 @@ struct SeatMapView: View {
         let sections = Set(viewModel.seats.map { $0.section })
         return sections.count
     }
+    private func updateSelectedSeats(){
+        guard let userId = authService.user?.uid else { return }
+            
+            // Llamamos a la nueva función de batch
+            eventService.updateSelectedSeats(seats: selectedSeats, userId: userId) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        print("Todos los asientos guardados en una sola operación")
+                        self.selectedSeats.removeAll()
+                        // Opcional: Mostrar alerta de éxito
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                    }
+                }
+            }
+    }
+}
+
+struct LegendItem: View {
+    let color: Color
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Rectangle()
+                .fill(color)
+                .frame(width: 15, height: 15)
+                .cornerRadius(3)
+            Text(text)
+                .font(.system(size: 10))
+        }
+    }
 }
 
 #Preview {
-    SeatMapView(seatMapId:" ")
+    SeatMapView(seatMapId:" ",eventName:"Prueba", eventDate: Date())
     
 }

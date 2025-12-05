@@ -26,6 +26,7 @@ struct GrupoSolisApp: App {
         WindowGroup {
             Onboarding()
                 .environmentObject(authService)
+                .preferredColorScheme(.light)
         }
     }
 }

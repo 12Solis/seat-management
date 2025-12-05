@@ -13,10 +13,15 @@ struct TestEventsView: View {
     @EnvironmentObject private var authService: AuthenticationService
     
     @State private var selectedEventId: String? = nil
+    @State private var selectedEventName: String = ""
+    @State private var selectedEventDate: Date = Date()
     @State private var selectedSeatMapId: String? = nil
     @State private var isShowingTemplateSelection = false
     @State private var isNavigatingToSeatMap = false
     @State private var isLoadingMap = false
+    
+    @State private var showDeleteAlert = false
+    @State private var eventToDelete: Event? = nil
     
     var body: some View {
         NavigationStack {
@@ -24,6 +29,16 @@ struct TestEventsView: View {
                 Text("Gestor de Eventos")
                     .font(.title)
                     .bold()
+                /*Button("Prueba claves"){
+                    authService.checkAccessCode(code: "123456"){result in
+                        if result == true {
+                            print("Codigos accesados")
+                        }else{
+                            print("Error accesando codigos")
+                        }
+                        
+                    }
+                }*/
                 
                 Button("Crear Nuevo Evento desde Plantilla") {
                     isShowingTemplateSelection = true
@@ -49,44 +64,57 @@ struct TestEventsView: View {
                         .font(.headline)
                         .padding(.horizontal)
                     
-                    List(eventVM.events) { event in
-                        VStack(alignment: .leading) {
-                            Text(event.name)
-                                .font(.headline)
-                            Text("Lugar: \(event.place)")
-                                .font(.subheadline)
-                            Text("Fecha: \(event.date, style: .date)")
-                                .font(.caption)
-                                .foregroundColor(.gray)
+                    List {
+                        ForEach(eventVM.events){event in
+                            
+                            EventListElement(event: event)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedEventName = event.name
+                                    selectedEventDate = event.date
+                                    fetchAndOpenMap(for: event)
+                                    print("Evento seleccionado: \(event.name) - ID: \(event.id ?? "nil")")
+                                }
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            fetchAndOpenMap(for: event)
-                            print("Evento seleccionado: \(event.name) - ID: \(event.id ?? "nil")")
-                        }
-                        .background(selectedEventId == event.id ? Color.blue.opacity(0.1) : Color.clear)
+                        .onDelete(perform: askForDeletion)
                     }
                     .listStyle(PlainListStyle())
+                    .refreshable {
+                        eventVM.fetchEvents()
+                    }
                 }
                 
                 Spacer()
             }
-            .navigationBarItems(leading: Button("Logout"){authService.signOut()})
+            .navigationBarItems(leading: Button("Cerrar Sesión"){authService.signOut()})
             .padding()
             .navigationDestination(isPresented: $isNavigatingToSeatMap) {
                 if let mapId = selectedSeatMapId {
-                    SeatMapView(seatMapId: mapId)
+                    SeatMapView(seatMapId: mapId,eventName:selectedEventName, eventDate: selectedEventDate)
                         .environmentObject(authService)
                 } else {
                     Text("Error: No se encontró el ID del mapa")
                 }
             }
-            .sheet(isPresented: $isShowingTemplateSelection) {
-                TemplateSelectionView()
-                    .onDisappear {
-                        
-                        eventVM.fetchEvents()
+            .sheet(isPresented: $isShowingTemplateSelection,onDismiss:{eventVM.fetchEvents()}) {
+                NavigationStack {
+                    TemplateSelectionView(sheetPresented: $isShowingTemplateSelection)
+                        .onDisappear {
+                            eventVM.fetchEvents()
+                        }
+                }
+            }
+            .alert("Eliminar evento",isPresented:$showDeleteAlert){
+                Button("Cancelar",role: .cancel){
+                    eventToDelete = nil
+                }
+                Button("Eliminar", role: .destructive){
+                    if let event = eventToDelete {
+                        deleteEvent(event)
                     }
+                }
+            }message: {
+                Text("¿Estás seguro? Esta acción borrará el evento, su mapa y todos sus asientos. Esta acción no se puede deshacer.")
             }
             
         }
@@ -105,7 +133,6 @@ struct TestEventsView: View {
                 switch result{
                 case .success(let maps):
                     if let firstMap = maps.first, let mapId = firstMap.id {
-                        print("Mapa encontrado en la nube: \(mapId)")
                         self.selectedSeatMapId = mapId
                         self.isNavigatingToSeatMap = true
                     } else {
@@ -117,6 +144,32 @@ struct TestEventsView: View {
             }
         }
     }
+    
+    private func askForDeletion(at offsets: IndexSet) {
+        if let index = offsets.first {
+            let event = eventVM.events[index]
+            self.eventToDelete = event
+            self.showDeleteAlert = true
+        }
+    }
+    
+    private func deleteEvent(_ event: Event) {
+        guard let eventId = event.id else { return }
+        
+        eventService.deleteEvent(eventId: eventId) { result in
+            DispatchQueue.main.async {
+                switch result{
+                case .success:
+                    print("Evento eliminado")
+                    self.eventToDelete = nil
+                    eventVM.fetchEvents()
+                case .failure:
+                    print("Error eliminando el evento")
+                }
+            }
+        }
+    }
+    
 }
 
 #Preview {
