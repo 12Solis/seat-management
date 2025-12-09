@@ -12,9 +12,7 @@ struct TestEventsView: View {
     @State private var eventService = EventService()
     @EnvironmentObject private var authService: AuthenticationService
     
-    @State private var selectedEventId: String? = nil
-    @State private var selectedEventName: String = ""
-    @State private var selectedEventDate: Date = Date()
+    @State private var selectedEvent: Event? = nil
     @State private var selectedSeatMapId: String? = nil
     @State private var isShowingTemplateSelection = false
     @State private var isNavigatingToSeatMap = false
@@ -70,8 +68,7 @@ struct TestEventsView: View {
                             EventListElement(event: event)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    selectedEventName = event.name
-                                    selectedEventDate = event.date
+                                    selectedEvent = event
                                     fetchAndOpenMap(for: event)
                                     print("Evento seleccionado: \(event.name) - ID: \(event.id ?? "nil")")
                                 }
@@ -90,7 +87,7 @@ struct TestEventsView: View {
             .padding()
             .navigationDestination(isPresented: $isNavigatingToSeatMap) {
                 if let mapId = selectedSeatMapId {
-                    SeatMapView(seatMapId: mapId,eventName:selectedEventName, eventDate: selectedEventDate)
+                    SeatMapView(seatMapId: mapId,event: selectedEvent!)
                         .environmentObject(authService)
                 } else {
                     Text("Error: No se encontró el ID del mapa")

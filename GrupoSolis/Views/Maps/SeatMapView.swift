@@ -14,13 +14,14 @@ struct SeatMapView: View {
     @EnvironmentObject private var authService: AuthenticationService
     
     let seatMapId: String
-    let eventName: String
-    let eventDate: Date
+    let event: Event
+    let mapCanvasSize = CGSize(width: 1500, height: 1600)
     
     @State private var selectedSeats: [Seat] = []
     @State private var stageData: StageData? = nil
     
     @State private var errorMessage = ""
+    @State private var isSheetPresented = false
     
     private func loadStageData() {
         
@@ -40,17 +41,18 @@ struct SeatMapView: View {
                 HStack{
                     Spacer()
                     VStack(alignment: .center,spacing: 10){
-                        Text(eventName)
+                        Text(event.name)
                             .font(.title)
                             .bold()
-                        Text(eventDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day(.twoDigits).hour().minute().locale(Locale(identifier: "es_MX"))))
+                        Text((event.date).formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day(.twoDigits).hour().minute().locale(Locale(identifier: "es_MX"))))
                             .font(.headline)
                             .foregroundColor(.gray)
                     }
                     Spacer()
                 }
                 
-                HStack(spacing: 20) {
+                HStack(spacing: 15) {
+                    LegendItem(color: .blue, text: "Seleccionado")
                     LegendItem(color: .green, text: "Disponible")
                     LegendItem(color: .red, text: "Vendido")
                     LegendItem(color: .orange, text: "Reservado")
@@ -60,22 +62,22 @@ struct SeatMapView: View {
             .background(Color(.systemBackground))
             .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
             
-            ZoomableScrollView() {
+            ZoomableScrollView(mapSize: mapCanvasSize) {
                 ZStack {
-                    if let stageData = stageData {
-                        StageView(stageData: stageData)
-                            .position(
-                                x: CGFloat(stageData.positionX),
-                                y: CGFloat(stageData.positionY)
-                            )
-                            .offset(x:150,y: 300)
+                        if let stageData = stageData {
+                            StageView(stageData: stageData)
+                                .position(
+                                    x: CGFloat(stageData.positionX),
+                                    y: CGFloat(stageData.positionY)
+                                )
+                                .offset(x: 150, y: 300)
+                        }
+
+                        PlazaSccMapView(viewModel: viewModel, stageData: stageData, selectedSeats: $selectedSeats)
+                            .offset(x: 150, y: 300)
                     }
- 
-                    PlazaSccMapView(viewModel: viewModel, stageData: stageData,selectedSeats: $selectedSeats)
-                        .offset(x:150, y:300)
-                }
-                .frame(width: 1500, height: 1600)
-                .contentShape(Rectangle())
+                    .frame(width: mapCanvasSize.width, height: mapCanvasSize.height)
+                    .contentShape(Rectangle())
             }
             
             
@@ -96,10 +98,14 @@ struct SeatMapView: View {
         .toolbar(){
             ToolbarItem(placement:.confirmationAction){
                 Button("Guardar"){
-                    updateSelectedSeats()
+                    isSheetPresented = true
                 }
                 .disabled(selectedSeats.isEmpty)
             }
+        }
+        .sheet(isPresented:$isSheetPresented){
+            ReserveSeatFormView(event: event,selectedSeats: $selectedSeats, isPresented: $isSheetPresented)
+                .presentationDetents([.fraction(0.85)])
         }
         .onAppear {
             viewModel.loadSeatsForMap(seatMapId: seatMapId)
@@ -114,23 +120,6 @@ struct SeatMapView: View {
         let sections = Set(viewModel.seats.map { $0.section })
         return sections.count
     }
-    private func updateSelectedSeats(){
-        guard let userId = authService.user?.uid else { return }
-            
-            // Llamamos a la nueva función de batch
-            eventService.updateSelectedSeats(seats: selectedSeats, userId: userId) { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        print("Todos los asientos guardados en una sola operación")
-                        self.selectedSeats.removeAll()
-                        // Opcional: Mostrar alerta de éxito
-                    case .failure(let error):
-                        self.errorMessage = error.localizedDescription
-                    }
-                }
-            }
-    }
 }
 
 struct LegendItem: View {
@@ -139,10 +128,15 @@ struct LegendItem: View {
     
     var body: some View {
         HStack(spacing: 6) {
-            Rectangle()
+            Circle()
                 .fill(color)
                 .frame(width: 15, height: 15)
                 .cornerRadius(3)
+                .overlay{
+                    Circle()
+                        .stroke(.black, lineWidth: 0.5)
+                }
+                .shadow(radius: 2)
             Text(text)
                 .font(.system(size: 10))
         }
@@ -150,6 +144,6 @@ struct LegendItem: View {
 }
 
 #Preview {
-    SeatMapView(seatMapId:" ",eventName:"Prueba", eventDate: Date())
+    SeatMapView(seatMapId: "", event: Event(name: "Prueba", date: Date(), place: "Prueba"))
     
 }

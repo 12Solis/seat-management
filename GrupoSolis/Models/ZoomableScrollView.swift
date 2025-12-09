@@ -10,8 +10,10 @@ import UIKit
 
 struct ZoomableScrollView<Content: View>: UIViewRepresentable {
     private var content: Content
+    private var mapSize: CGSize
 
-    init(@ViewBuilder content: () -> Content) {
+    init(mapSize: CGSize, @ViewBuilder content: () -> Content) {
+        self.mapSize = mapSize
         self.content = content()
     }
 
@@ -19,42 +21,55 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
         let scrollView = UIScrollView()
         scrollView.delegate = context.coordinator
         scrollView.maximumZoomScale = 5.0
-        scrollView.minimumZoomScale = 0.3
+        scrollView.minimumZoomScale = 0.1
         scrollView.bouncesZoom = true
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
+        scrollView.backgroundColor = .clear
         
-       
         let hostedView = context.coordinator.hostingController.view!
         hostedView.translatesAutoresizingMaskIntoConstraints = true
-        hostedView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        hostedView.frame = scrollView.bounds
+        hostedView.autoresizingMask = []
+        hostedView.backgroundColor = .clear
+        
+        hostedView.frame = CGRect(origin: .zero, size: mapSize)
+        scrollView.contentSize = mapSize
         scrollView.addSubview(hostedView)
 
         return scrollView
     }
 
     func updateUIView(_ uiView: UIScrollView, context: Context) {
-       
         context.coordinator.hostingController.rootView = self.content
-        
-        
-        let size = context.coordinator.hostingController.sizeThatFits(in: CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
-        
-        
-        uiView.contentSize = size
-        context.coordinator.hostingController.view.frame.size = size
+
+        if !context.coordinator.hasSetInitialZoom {
+            DispatchQueue.main.async {
+                let visibleW = uiView.bounds.width
+                let visibleH = uiView.bounds.height
+                                
+                if visibleW > 0 && visibleH > 0 {
+                    let scaleToFit = min(visibleW / mapSize.width, visibleH / mapSize.height) * 0.95
+                    let startingZoom = min(scaleToFit * 1.8, 5.0)
+                    uiView.minimumZoomScale = scaleToFit
+                    uiView.setZoomScale(startingZoom, animated: false)
+                                    
+                    let offsetX = (mapSize.width * startingZoom - visibleW) / 2
+                    let offsetY = (mapSize.height * startingZoom - visibleH) / 2
+                    uiView.contentOffset = CGPoint(x: max(0, offsetX), y: max(0, offsetY))
+                                
+                    context.coordinator.hasSetInitialZoom = true
+                }
+            }
+        }
     }
 
     func makeCoordinator() -> Coordinator {
         return Coordinator(hostingController: UIHostingController(rootView: self.content))
     }
 
-   
-   
-
     class Coordinator: NSObject, UIScrollViewDelegate {
         var hostingController: UIHostingController<Content>
+        var hasSetInitialZoom = false
 
         init(hostingController: UIHostingController<Content>) {
             self.hostingController = hostingController
@@ -63,19 +78,5 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
             return hostingController.view
         }
-        
-        
-        func scrollViewDidZoom(_ scrollView: UIScrollView) {
-            guard let hostedView = hostingController.view else { return }
-            
-            
-            let offsetX = max((scrollView.bounds.width - scrollView.contentSize.width) * 0.5, 0)
-            let offsetY = max((scrollView.bounds.height - scrollView.contentSize.height) * 0.5, 0)
-            
-            
-            hostedView.center = CGPoint(
-                x: scrollView.contentSize.width * 0.5 + offsetX,
-                y: scrollView.contentSize.height * 0.5 + offsetY
-            )
-        }
-    }}
+    }
+}

@@ -10,7 +10,13 @@ import SwiftUI
 struct SeatView: View {
     let seat: Seat
     let isSelected: Bool
+    let seatBeingInspected: Seat?
     let onTap: (Seat) -> Void
+    
+    let onRefund: (Seat) -> Void
+    let onDismissBubble: () -> Void
+    let onLiquidate: (Seat) -> Void
+    
     var body: some View {
         Circle()
             .fill(seatColor)
@@ -24,6 +30,19 @@ struct SeatView: View {
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(textColor)
             )
+            .overlay(alignment: .bottom){
+                if seatBeingInspected?.id == seat.id {
+                    SeatDetailBubble(
+                        seat: seat,
+                        onDismiss: onDismissBubble,
+                        onRefund: {onRefund(seat)},
+                        onLiquidate: {onLiquidate(seat)}
+                    )
+                    .offset(y: -35)
+                    .onTapGesture { }
+                }
+            }
+            .zIndex(seatBeingInspected?.id == seat.id ? 100 : 1)
             .onTapGesture {
                 onTap(seat)
             }

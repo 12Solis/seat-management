@@ -14,6 +14,11 @@ struct RowView: View {
     let onSeatTap: (Seat) -> Void
     var sectionName:String
     
+    let seatBeingInspected: Seat?
+    let onRefund: (Seat) -> Void
+    let onDismissBubble: () -> Void
+    let onLiquidate: (Seat) -> Void
+    
     var body: some View {
         HStack(spacing: 2){
             Text("F \(row)")
@@ -26,7 +31,12 @@ struct RowView: View {
             ForEach(seats){seat in
                 SeatView(seat: seat,
                          isSelected: selectedSeats.contains(where: { $0.id == seat.id }) ,
-                         onTap: onSeatTap)
+                         seatBeingInspected:seatBeingInspected ,
+                         onTap: onSeatTap,
+                         onRefund: onRefund,
+                         onDismissBubble: onDismissBubble,
+                         onLiquidate: onLiquidate
+                )
             }
             
         }

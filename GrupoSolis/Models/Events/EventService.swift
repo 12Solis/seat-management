@@ -157,42 +157,8 @@ class EventService: ObservableObject {
                 completion(seats)
             }
     }
-    
-    /*func updateTempSeatStatus(_ seat: Seat, newStatus: SeatStatus, completion: @escaping(Result<Void,Error>)->Void) {
-        var updatedSeat = seat
-        updatedSeat.tempStatus = newStatus
-        try? db.collection("seats").document(seat.id!).setData(from: updatedSeat)
-        completion(.success(()))
-    }*/
-    
-    /*func updateSeatStatus(_ seat: Seat, newStatus: SeatStatus, userId: String, completion: @escaping(Result<Void,Error>)->Void) {
 
-        guard let seatDocId = seat.id else {
-            completion(.failure(NSError(domain: "Error de ID", code: -1, userInfo: [NSLocalizedDescriptionKey: "El asiento no tiene ID de documento"])))
-            return
-        }
-
-        let updatedSeat = Seat(
-            id: seatDocId,
-            seatMapId: seat.seatMapId,
-            section: seat.section,
-            row: seat.row,
-            number: seat.number,
-            status: newStatus,
-            tempStatus: newStatus,
-            lastUpdatedBy: userId,
-            price: seat.price,
-            priceCategory: seat.priceCategory
-        )
-        
-        do {
-            try db.collection("seats").document(seatDocId).setData(from: updatedSeat)
-            completion(.success(()))
-        } catch {
-            completion(.failure(error))
-        }
-    }*/
-    func updateSelectedSeats(seats: [Seat], userId: String, completion: @escaping(Result<Void, Error>) -> Void) {
+    func updateSelectedSeats(seats: [Seat], userId: String,newStatus:SeatStatus ,buyer:String, amountPaid:Double,completion: @escaping(Result<Void, Error>) -> Void) {
         let batch = db.batch()
         
         for seat in seats {
@@ -205,11 +171,12 @@ class EventService: ObservableObject {
                 section: seat.section,
                 row: seat.row,
                 number: seat.number,
-                status: seat.tempStatus,
-                tempStatus: seat.tempStatus,
+                status: newStatus,
                 lastUpdatedBy: userId,
                 price: seat.price,
-                priceCategory: seat.priceCategory
+                priceCategory: seat.priceCategory,
+                buyerName: buyer,
+                amountPaid: amountPaid
             )
             
             do {
@@ -267,7 +234,6 @@ class EventService: ObservableObject {
                             row: rowNumber,
                             number: seatNumber,
                             status: .available,
-                            tempStatus: .available,
                             lastUpdatedBy: nil,
                             price: rowPrice,
                             priceCategory: categoryName

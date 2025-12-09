@@ -40,42 +40,6 @@ class SeatMapViewModel: ObservableObject {
         seats = []
     }
     
-   /* func toggleSeatStatus(_ seat: Seat, userId:String){
-        let newStatus: SeatStatus
-        
-        switch seat.status {
-        case .available:
-            newStatus = .sold
-        case .sold:
-            newStatus = .available
-        case .reserved:
-            newStatus = .available
-        }
-        
-        isLoading = true
-        
-        eventService.updateTempSeatStatus(seat, newStatus: newStatus){ [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                switch result{
-                case.success: break
-                case .failure(let error): self?.errorMessage = error.localizedDescription
-                }
-            }
-        }
-        
-        /*eventService.updateSeatStatus(seat, newStatus: newStatus, userId: userId){ [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                switch result{
-                case .success:
-                    print("Estado de asiento actualizado")
-                case .failure(let error):
-                    self?.errorMessage = error.localizedDescription
-                }
-            }
-        }*/
-    }*/
     
     func seatsInSection(_ section: Int) -> [Seat] {
         let filteredSeats = seats.filter { $0.section == section }

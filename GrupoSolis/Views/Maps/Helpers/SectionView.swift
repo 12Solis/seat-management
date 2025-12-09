@@ -13,13 +13,14 @@ struct SectionView: View {
     let onSeatTap: (Seat) -> Void
     let selectedSeats: [Seat]
     
+    let seatBeingInspected: Seat?
+    let onRefund: (Seat) -> Void
+    let onDismissBubble: () -> Void
+    let onLiquidate: (Seat) -> Void
+    
     private var uniqueRows: [Int] {
         let rows = Set(seats.map { $0.row })
         return Array(rows).sorted()
-    }
-    private func seatsInRow(_ row : Int) -> [Seat] {
-        return seats.filter {$0.row == row}.sorted { $0.number < $1.number}
-        
     }
     
     var body: some View {
@@ -43,12 +44,22 @@ struct SectionView: View {
                         seats: seatsInRow(actualRow),
                         selectedSeats: selectedSeats,
                         onSeatTap: onSeatTap,
-                        sectionName: getSectionName(section)
+                        sectionName: getSectionName(section),
+                        seatBeingInspected: seatBeingInspected,
+                        onRefund: onRefund,
+                        onDismissBubble: onDismissBubble,
+                        onLiquidate: onLiquidate
                     )
                 }
             }
         }
     }
+    
+    private func seatsInRow(_ row : Int) -> [Seat] {
+        return seats.filter {$0.row == row}.sorted { $0.number < $1.number}
+        
+    }
+    
     private func getSectionName(_ section: Int) -> String {
         let sectionNames = ["A", "B", "C", "D", "E"]
         return section < sectionNames.count ? sectionNames[section] : "\(section + 1)"
@@ -67,9 +78,22 @@ struct SectionContainerView: View {
     let rotation: Angle
     let selectedSeats: [Seat]
     
+    let seatBeingInspected: Seat?
+    let onRefund: (Seat) -> Void
+    let onDismissBubble: () -> Void
+    let onLiquidate: (Seat) -> Void
+    
     var body: some View {
         VStack(spacing: 8) {
-            SectionView(section: section, seats: seats, onSeatTap: onSeatTap, selectedSeats: selectedSeats)
+            SectionView(section: section,
+                        seats: seats,
+                        onSeatTap: onSeatTap,
+                        selectedSeats: selectedSeats,
+                        seatBeingInspected: seatBeingInspected,
+                        onRefund: onRefund,
+                        onDismissBubble: onDismissBubble,
+                        onLiquidate: onLiquidate
+            )
         }
         .padding(8)
         .background(
