@@ -37,6 +37,13 @@ struct SeatDetailBubble: View {
                     .multilineTextAlignment(.leading)
             }
             
+            if let date = seat.lastUpdate{
+                Text((seat.status == .reserved ? "Reservado el: " : "Comprado el: ") + date.formatted(date: .numeric, time: .shortened))
+                    .font(.system(size: 8))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.leading)
+            }
+            
             if seat.status == .reserved {
                 let price = seat.price ?? 0.0
                 let paid = seat.amountPaid ?? 0.0
@@ -80,7 +87,6 @@ struct SeatDetailBubble: View {
                 .foregroundColor(.white)
                 .font(.caption)
                 .offset(y: 8)
-                .shadow(radius: 1)
         }
     }
 }

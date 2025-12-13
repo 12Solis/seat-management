@@ -13,9 +13,7 @@ struct Onboarding: View {
     var body: some View {
         Group{
             if authService.isAuthenticated {
-               // ContentView()
-                TestEventsView()
-                
+               ContentView()
             }else{
                 LoginView()
             }

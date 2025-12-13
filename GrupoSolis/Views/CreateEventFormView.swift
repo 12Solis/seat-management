@@ -123,6 +123,7 @@ struct CreateEventFormView: View {
         }message: {
             Text(errorMessage)
         }
+        .scrollDismissesKeyboard(.interactively)
 
         
     }

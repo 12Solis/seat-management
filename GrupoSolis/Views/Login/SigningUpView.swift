@@ -75,33 +75,7 @@ struct SigningUpView: View {
                                     }
                                 }
                             }
-                            /*if !password.isEmpty && password == passwordConfirmation{
-                                if !accessCode.isEmpty{
-                                    authService.signUp(email: email, password: password,accessCode: accessCode){result in
-                                        switch result{
-                                        case .success:
-                                            alertMessage = "Usuario registrado con éxito"
-                                            showAlert.toggle()
-                                            succesfullSigngUp = true
-                                            
-                                        case .failure(let error):
-                                            alertMessage = "Error al registrar el usuario: \(error.localizedDescription)"
-                                            showAlert.toggle()
-                                            succesfullSigngUp = false
-                                        }
-                                        
-                                    }
-                                }else{
-                                    alertMessage = "Por favor introduce el codigo de acceso proporcionado por el administrador"
-                                    showAlert.toggle()
-                                    succesfullSigngUp = false
-                                }
-                                
-                            }else{
-                               alertMessage = "Las contraseñas no coinciden"
-                                showAlert.toggle()
-                                succesfullSigngUp = false
-                            }*/
+
                         }
                         .buttonStyle(.borderedProminent)
                         Spacer()
