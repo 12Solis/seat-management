@@ -16,7 +16,7 @@ struct SectionView: View {
     let seatBeingInspected: Seat?
     let onRefund: (Seat) -> Void
     let onDismissBubble: () -> Void
-    let onLiquidate: (Seat) -> Void
+    let onLiquidate: (Seat, PaymentMethods) -> Void
     
     private var uniqueRows: [Int] {
         let rows = Set(seats.map { $0.row })
@@ -81,7 +81,7 @@ struct SectionContainerView: View {
     let seatBeingInspected: Seat?
     let onRefund: (Seat) -> Void
     let onDismissBubble: () -> Void
-    let onLiquidate: (Seat) -> Void
+    let onLiquidate: (Seat, PaymentMethods) -> Void
     
     var body: some View {
         VStack(spacing: 8) {

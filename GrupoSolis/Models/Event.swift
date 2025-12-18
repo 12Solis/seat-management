@@ -13,13 +13,15 @@ struct Event: Codable, Identifiable {
     let name: String
     let date: Date
     let place: String
+    let seats: Int
     
     var isPriceActive: Bool
     
-    init(name: String, date: Date, place: String, isPriceActive: Bool = false) {
+    init(name: String, date: Date, place: String, isPriceActive: Bool = false, seats: Int){
         self.name = name
         self.date = date
         self.place = place
         self.isPriceActive = isPriceActive
+        self.seats = seats
     }
 }

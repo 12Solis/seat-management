@@ -35,8 +35,8 @@ struct PlazaSccMapView: View {
                 onDismissBubble: {
                     seatToRefund = nil
                 },
-                onLiquidate: { seat in
-                    liquidateSeat(seat)
+                onLiquidate: { seat, method in
+                    liquidateSeat(seat, method: method)
                 }
             )
             .position(getPositionForSection(section))
@@ -63,28 +63,31 @@ struct PlazaSccMapView: View {
                 print("Asiento \(seat.number) deseleccionado (Local)")
             } else {
                 if let first = selectedSeats.first, first.section != seat.section {
-                    print("Intento de mezclar secciones")
+                    print("No se puede seleccionar asientos de distnitas secciones")
                     return
                 }
                 selectedSeats.append(seat)
-                print("Asiento \(seat.number) seleccionado (Local)")
             }
         }
     }
     
     // MARK: - Operaciones de asientos
     
-    private func liquidateSeat(_ seat: Seat) {
+    private func liquidateSeat(_ seat: Seat, method: PaymentMethods) {
         guard let userId = authService.user?.uid else { return }
-        let fullPrice = seat.price ?? 0.0
+        let paid = seat.amountPaid ?? 0.0
         let currentBuyer = seat.buyerName ?? "Cliente"
+        let originalPaymentMethod = seat.paymentMethod ?? nil
 
         eventService.updateSelectedSeats(
             seats: [seat],
             userId: userId,
             newStatus: .sold,
             buyer: currentBuyer,
-            amountPaid: fullPrice
+            amountPaid: paid,
+            paymentMethod: originalPaymentMethod,
+            liquidateMethod: method
+            
         ) { result in
             DispatchQueue.main.async {
                 switch result {
@@ -106,7 +109,9 @@ struct PlazaSccMapView: View {
             userId: userId,
             newStatus: .available,
             buyer: "",
-            amountPaid: 0.0
+            amountPaid: 0.0,
+            paymentMethod: nil,
+            liquidateMethod: nil
         ) { result in
             DispatchQueue.main.async {
                 switch result {

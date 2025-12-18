@@ -176,7 +176,7 @@ struct ReserveSeatFormView: View {
     private func updateSelectedSeats(){
         guard let userId = authService.user?.uid else { return }
             
-        eventService.updateSelectedSeats(seats: selectedSeats, userId: userId, newStatus: newStatus, buyer: buyerName, amountPaid: amountPaid/Double(selectedSeats.count)) { result in
+        eventService.updateSelectedSeats(seats: selectedSeats, userId: userId, newStatus: newStatus, buyer: buyerName, amountPaid: amountPaid/Double(selectedSeats.count), paymentMethod: paymentMethod, liquidateMethod: nil) { result in
                 DispatchQueue.main.async {
                     switch result {
                     case .success:
@@ -254,7 +254,7 @@ struct ReserveSeatFormView: View {
 
 #Preview {
     ReserveSeatFormView(
-        event:Event(name: "Prueba", date: Date(), place: "Prueba") ,
+        event:Event(name: "Prueba", date: Date(), place: "Prueba",seats: 100) ,
         selectedSeats: .constant([
             Seat(seatMapId: "", section: 1, row: 1, number: 1, status: .available,lastUpdatedBy: "", price: 200),
             Seat(seatMapId: "", section: 1, row: 1, number: 2, status: .available, lastUpdatedBy: "", price: 200),]),

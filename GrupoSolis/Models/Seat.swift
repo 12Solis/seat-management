@@ -23,8 +23,9 @@ struct Seat: Codable, Identifiable, Equatable {
     var buyerName: String?
     var amountPaid: Double?
     var paymentMethod: PaymentMethods?
+    var liquidatePaymentMethod: PaymentMethods?
     
-    init(id: String? = nil, seatMapId: String, section: Int, row: Int, number: Int, status: SeatStatus, lastUpdatedBy: String?,price: Double? = nil, priceCategory: String? = nil, buyerName: String? = nil, amountPaid: Double? = nil, paymentMethod: PaymentMethods? = nil) {
+    init(id: String? = nil, seatMapId: String, section: Int, row: Int, number: Int, status: SeatStatus, lastUpdatedBy: String?,price: Double? = nil, priceCategory: String? = nil, buyerName: String? = nil, amountPaid: Double? = nil, paymentMethod: PaymentMethods? = nil, liquidatePaymentMethod: PaymentMethods? = nil) {
         self.id = id
         self.seatMapId = seatMapId
         self.section = section
@@ -38,6 +39,7 @@ struct Seat: Codable, Identifiable, Equatable {
         self.buyerName = buyerName
         self.amountPaid = amountPaid
         self.paymentMethod = paymentMethod
+        self.liquidatePaymentMethod = liquidatePaymentMethod
     }
 }
 

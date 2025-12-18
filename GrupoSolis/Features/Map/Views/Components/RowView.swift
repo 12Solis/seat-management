@@ -17,7 +17,7 @@ struct RowView: View {
     let seatBeingInspected: Seat?
     let onRefund: (Seat) -> Void
     let onDismissBubble: () -> Void
-    let onLiquidate: (Seat) -> Void
+    let onLiquidate: (Seat, PaymentMethods) -> Void
     
     var body: some View {
         HStack(spacing: 2){

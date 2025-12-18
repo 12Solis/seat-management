@@ -15,7 +15,7 @@ struct SeatView: View {
     
     let onRefund: (Seat) -> Void
     let onDismissBubble: () -> Void
-    let onLiquidate: (Seat) -> Void
+    let onLiquidate: (Seat, PaymentMethods) -> Void
     
     var body: some View {
         Circle()
@@ -36,7 +36,9 @@ struct SeatView: View {
                         seat: seat,
                         onDismiss: onDismissBubble,
                         onRefund: {onRefund(seat)},
-                        onLiquidate: {onLiquidate(seat)}
+                        onLiquidate: { seat, method in
+                            onLiquidate(seat, method)
+                        }
                     )
                     .offset(y: -35)
                     .onTapGesture { }

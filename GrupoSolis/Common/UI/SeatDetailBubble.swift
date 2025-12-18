@@ -11,7 +11,9 @@ struct SeatDetailBubble: View {
     var seat: Seat
     let onDismiss: () -> Void
     let onRefund: () -> Void
-    let onLiquidate: () -> Void
+    let onLiquidate: (Seat, PaymentMethods) -> Void
+    
+    @State private var paymenthMethod : PaymentMethods = .cash
     
     var body: some View {
         VStack(spacing: 8){
@@ -50,21 +52,30 @@ struct SeatDetailBubble: View {
                 Text("Saldo restante: \((price - paid).formatted())")
                     .font(.system(size: 10))
                     .foregroundStyle(.orange)
+                
+                Picker("Metodo", selection: $paymenthMethod){
+                    Text("Efectivo").tag(PaymentMethods.cash)
+                    Text("Transf").tag(PaymentMethods.bankWire)
+                }
+                .pickerStyle(.segmented)
+                
                 Button{
-                    onLiquidate()
+                    onLiquidate(seat, paymenthMethod)
                 }label:{
                     Text("Liquidar")
                         .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
-                        .background(Color.blue)
+                        .background(Color.rgb(16, 185, 129))
                         .cornerRadius(4)
                 }
             }
             
+            
             if let method = (seat.paymentMethod)?.rawValue{
                 Text("Metodo de pago: \(method)")
+                    .font(.system(size: 9, weight: .bold))
             }
             
             Button(action: onRefund) {
@@ -88,6 +99,12 @@ struct SeatDetailBubble: View {
                 .font(.caption)
                 .offset(y: 8)
         }
+    }
+}
+
+extension Color {
+    static func rgb(_ r: Double, _ g: Double, _ b: Double) -> Color {
+        return Color(red: r / 255.0, green: g / 255.0, blue: b / 255.0)
     }
 }
 

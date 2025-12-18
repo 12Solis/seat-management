@@ -25,7 +25,8 @@ class EventViewModel: ObservableObject {
         let testEvent = Event(
             name: "Concierto de Prueba",
             date: Date().addingTimeInterval(86400),
-            place: "Estadio de Prueba"
+            place: "Estadio de Prueba",
+            seats: 100
         )
         
         eventService.createEvent(testEvent) { [weak self] result in

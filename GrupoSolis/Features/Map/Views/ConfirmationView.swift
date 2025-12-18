@@ -194,7 +194,7 @@ struct dottedLine: Shape {
 
 #Preview {
     ConfirmationView(
-        event:Event(name: "Prueba de Evento", date: Date(), place: "Estadio de pruebas"),
+        event:Event(name: "Prueba de Evento", date: Date(), place: "Estadio de pruebas",seats: 100),
         section: "A",
         row: "2",
         seats: "1,2",

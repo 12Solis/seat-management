@@ -37,10 +37,10 @@ struct EventListElement: View {
                     .foregroundStyle(.accentGray)
                     .font(.subheadline)
             }
-            .padding(.leading, 100)
+            .padding(.leading, 85)
         }
     } 
 }
 #Preview {
-    EventListElement(event: Event(name: "Prueba de Evento", date: Date(), place: "Lugar de prueba"))
+    EventListElement(event: Event(name: "Prueba de Evento", date: Date(), place: "Lugar de prueba", seats:100))
 }

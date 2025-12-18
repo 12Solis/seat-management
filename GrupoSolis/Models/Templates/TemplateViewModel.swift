@@ -32,7 +32,6 @@ class TemplateViewModel: ObservableObject {
                     print("TemplateViewModel - \(templates.count) plantillas cargadas exitosamente")
                     self?.templates = templates
                     
-                    // Debug adicional
                     if templates.isEmpty {
                         print("TemplateViewModel - templates está vacío")
                     } else {

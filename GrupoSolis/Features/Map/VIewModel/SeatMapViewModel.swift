@@ -21,6 +21,10 @@ class SeatMapViewModel: ObservableObject {
     private let eventService = EventService()
     private let cancellables = Set<AnyCancellable>()
     
+    deinit {
+        stopListening()
+    }
+    
     func loadSeatsForMap(seatMapId:String){
         isLoading = true
         
@@ -37,7 +41,6 @@ class SeatMapViewModel: ObservableObject {
     func stopListening(){
         listenerRegistration?.remove()
         listenerRegistration = nil
-        seats = []
     }
     
     
@@ -51,4 +54,48 @@ class SeatMapViewModel: ObservableObject {
         return seats.filter { $0.section == section && $0.row == row }
     }
     
+    var soldSeatsCount: Int {
+        return seats.filter { $0.status == .sold }.count
+    }
+    var reservedSeatsCount: Int {
+        return seats.filter { $0.status == .reserved }.count
+    }
+    
+    var totalRevenue: Int {
+        let total = seats.reduce(0.0) { partialResult, seat in
+            if seat.status == .available {
+                return partialResult
+            }
+            
+            if seat.status == .reserved {
+                return partialResult + (seat.amountPaid ?? 0.0)
+            } else if seat.status == .sold {
+                return partialResult + (seat.price ?? 0.0)
+            }
+            
+            return partialResult
+        }
+        return Int(total)
+    }
+    
+    var totalCash: Int {
+        let seatsPaidInCash = seats.filter {
+            ($0.status == .sold || $0.status == .reserved) && $0.paymentMethod == .cash
+        }
+        
+        let seatsLiquidatedInCash = seats.filter {
+            ($0.status == .sold) && $0.liquidatePaymentMethod == .cash
+        }
+        
+        let sumPaid = seatsPaidInCash.reduce(0.0) { $0 + ($1.amountPaid ?? 0.0) }
+        
+        let sumLiquidated = seatsLiquidatedInCash.reduce(0.0) { partialResult, seat in
+            let price = seat.price ?? 0.0
+            let paid = seat.amountPaid ?? 0.0
+            return partialResult + (price - paid)
+        }
+        
+        return Int(sumPaid + sumLiquidated)
+    }
+
 }

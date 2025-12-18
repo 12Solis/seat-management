@@ -148,7 +148,7 @@ class EventService: ObservableObject {
             }
     }
 
-    func updateSelectedSeats(seats: [Seat], userId: String,newStatus:SeatStatus ,buyer:String, amountPaid:Double,completion: @escaping(Result<Void, Error>) -> Void) {
+    func updateSelectedSeats(seats: [Seat], userId: String,newStatus:SeatStatus ,buyer:String, amountPaid:Double, paymentMethod: PaymentMethods?,liquidateMethod:PaymentMethods? ,completion: @escaping(Result<Void, Error>) -> Void) {
         let batch = db.batch()
         
         for seat in seats {
@@ -166,7 +166,9 @@ class EventService: ObservableObject {
                 price: seat.price,
                 priceCategory: seat.priceCategory,
                 buyerName: buyer,
-                amountPaid: amountPaid
+                amountPaid: amountPaid,
+                paymentMethod: paymentMethod,
+                liquidatePaymentMethod: liquidateMethod
             )
             
             do {
@@ -236,6 +238,8 @@ class EventService: ObservableObject {
             }
         }
     }
+    
+    
     
 }
 

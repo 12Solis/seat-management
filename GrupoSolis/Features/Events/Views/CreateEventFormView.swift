@@ -19,6 +19,7 @@ struct CreateEventFormView: View {
     @State private var name = ""
     @State private var date = Date()
     @State private var location = ""
+    let totalSeats: Int
     
     @State private var showAlert = false
     @State private var errorMessage = ""
@@ -152,7 +153,8 @@ struct CreateEventFormView: View {
             name: name,
             date: date,
             place: location,
-            isPriceActive: isPriceActive
+            isPriceActive: isPriceActive,
+            seats: totalSeats
         )
         var compiledPrices: [Int : [Int : Double]] = [:]
         

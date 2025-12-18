@@ -22,6 +22,7 @@ struct SeatMapView: View {
     
     @State private var errorMessage = ""
     @State private var isSheetPresented = false
+    @State private var isStatsPresented = false
     
     private func loadStageData() {
         
@@ -102,6 +103,16 @@ struct SeatMapView: View {
                 }
                 .disabled(selectedSeats.isEmpty)
             }
+            ToolbarItem(placement: .topBarLeading){
+                Button{
+                    isStatsPresented = true
+                }label: {
+                    Image(systemName: "chart.bar.xaxis")
+                }
+            }
+        }
+        .navigationDestination(isPresented: $isStatsPresented){
+            EventStatsMainView(viewModel: viewModel, event: event)
         }
         .sheet(isPresented:$isSheetPresented){
             ReserveSeatFormView(event: event,selectedSeats: $selectedSeats, isPresented: $isSheetPresented)
@@ -110,9 +121,6 @@ struct SeatMapView: View {
         .onAppear {
             viewModel.loadSeatsForMap(seatMapId: seatMapId)
             loadStageData()
-        }
-        .onDisappear{
-            viewModel.stopListening()
         }
     }
     
@@ -144,6 +152,6 @@ struct LegendItem: View {
 }
 
 #Preview {
-    SeatMapView(seatMapId: "", event: Event(name: "Prueba", date: Date(), place: "Prueba"))
+    SeatMapView(seatMapId: "", event: Event(name: "Prueba", date: Date(), place: "Prueba",seats: 100))
     
 }

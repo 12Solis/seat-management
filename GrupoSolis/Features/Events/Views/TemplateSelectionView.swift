@@ -45,7 +45,7 @@ struct TemplateSelectionView: View {
             }
             
             List(viewModel.templates){template in
-                NavigationLink(destination:CreateEventFormView(viewModel: viewModel, selectedTemplate: template,isPresented: $sheetPresented)) {
+                NavigationLink(destination:CreateEventFormView(viewModel: viewModel, selectedTemplate: template,isPresented: $sheetPresented, totalSeats: countTotalSeats(in: template.layoutData))) {
                     VStack(alignment:.leading,spacing: 8){
                         Text(template.name)
                             .font(.headline)
@@ -73,7 +73,6 @@ struct TemplateSelectionView: View {
             }
         }
         .onAppear{
-            print("TemplateSelectionView apareció")
             if viewModel.templates.isEmpty && !viewModel.isLoading {
                 viewModel.loadTemplates()
             }
