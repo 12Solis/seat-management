@@ -9,11 +9,18 @@ import SwiftUI
 
 struct PaymentMethodGraph: View {
     let isCash: Bool
-    let progress: Double = 0.7
     let totalAmount: Int
     let totalInCash: Int
+    
     var percentageInCash: Double {
-        Double(totalInCash) / Double(totalAmount)
+        guard totalAmount > 0 else { return 0 }
+        return Double(totalInCash) / Double(totalAmount)
+    }
+    
+    var displayPercentage: Double {
+        guard totalAmount > 0 else { return 0 }
+            
+        return isCash ? percentageInCash : (1.0 - percentageInCash)
     }
     
     @State private var animationProgress: Double = 0.0
@@ -30,56 +37,41 @@ struct PaymentMethodGraph: View {
             Text(isCash ? "$\(totalInCash)" : "$\(totalAmount - totalInCash)")
                 .font(.largeTitle)
                 .bold()
+            
+            GeometryReader { proxy in
+                let totalWidth = proxy.size.width
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 20)
-                    
-                    if isCash{
+                if totalWidth > 0 {
+                    ZStack(alignment: isCash ? .leading : .trailing) {
+                        
+                        Capsule()
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(height: 20)
+
+                        let barWidth = max(20, totalWidth * displayPercentage * animationProgress)
+                        
                         Capsule()
                             .fill(Color.green)
-                            .frame(
-                                width: max(20, geo.size.width * percentageInCash * animationProgress),
-                                height: 20
-                            )
+                            .frame(width: barWidth, height: 20)
                             .overlay(
-                                Text("\(Int(percentageInCash*100))%")
+                                Text("\(Int(displayPercentage * 100))%")
                                     .font(.caption)
                                     .bold()
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 6),
-                                alignment: .trailing
-                            )
-                    }else{
-                        Capsule()
-                            .fill(Color.green)
-                            .frame(
-                                width: max(20, geo.size.width * (1.0 - percentageInCash) * animationProgress),
-                                height: 20
-                            )
-                            .overlay(
-                                Text("\(Int((1.0 - percentageInCash) * 100))%")
-                                    .font(.caption)
-                                    .bold()
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 6),
-                                alignment: .trailing
+                                alignment: isCash ? .trailing : .leading
                             )
                     }
-
                 }
             }
             .frame(height: 20)
             .padding(.horizontal)
-            .onAppear{
-                withAnimation(.easeInOut(duration: 1.5)){
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.5)) {
                     animationProgress = 1
                 }
             }
         }
-        .padding(.horizontal)
     }
 }
 

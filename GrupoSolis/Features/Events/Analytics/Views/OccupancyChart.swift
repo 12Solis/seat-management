@@ -15,10 +15,12 @@ struct OccupancyChart: View {
     @State private var animationProgress = 0.0
     
     var percentageSold: Double {
-        soldSeats / Double(event.seats)
+        guard event.seats > 0 else { return 0 }
+        return soldSeats / Double(event.seats)
     }
     var totalPercentageOccupied: Double {
-        percentageSold + reservedSeats / Double(event.seats)
+        guard event.seats > 0 else { return 0 }
+        return percentageSold + (reservedSeats / Double(event.seats))
     }
     var body: some View {
         ZStack {
