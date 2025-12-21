@@ -211,3 +211,6 @@ struct CreateEventFormView: View {
     
 }
 
+#Preview {
+    CreateEventFormView(viewModel: TemplateViewModel(), selectedTemplate: nil, isPresented: .constant(true), totalSeats: 200)
+}

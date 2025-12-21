@@ -6,10 +6,15 @@
 //
 
 import Foundation
+import SwiftUI
 import FirebaseFirestore
+import FirebaseStorage
 import Combine
 
 class EventService: ObservableObject {
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
     private let db = Firestore.firestore()
     
     //MARK: operaciones de evento
@@ -239,7 +244,77 @@ class EventService: ObservableObject {
         }
     }
     
+    // MARK: Operaciónes de imagen
     
+    private let imageSize = CGSize(width: 600, height: 300)
+    
+    func processAndUploadImage( originalImage: UIImage, eventId: String, completion: @escaping (String?) -> Void){
+        
+        self.isLoading = true
+        self.errorMessage = nil
+        
+        if originalImage.size.height > originalImage.size.width {
+            self.errorMessage = "La imagen debe ser horizontal para ajustarse al formato."
+            self.isLoading = false
+            completion(nil)
+            return
+        }
+        
+        guard let processedImage = resizeAndCropImage(image: originalImage, targetSize: imageSize) else {
+            self.errorMessage = "Error al procesar imagen"
+            self.isLoading = false
+            completion(nil)
+            return
+        }
+        
+        guard let imageData = processedImage.jpegData(compressionQuality: 0.8) else {
+            self.isLoading = false
+            completion(nil)
+            return
+        }
+        
+        let storageRef = Storage.storage().reference().child("event_images/\(eventId).jpg")
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
+        
+        storageRef.putData(imageData, metadata: metadata){metadata, error in
+            if let error = error {
+                self.errorMessage = error.localizedDescription
+                self.isLoading = false
+                completion(nil)
+                return
+            }
+            
+            storageRef.downloadURL { url, error in
+                self.isLoading = false
+                guard let downloadURL = url else {
+                    completion(nil)
+                    return
+                }
+                print("Imagen subida con exito")
+                completion(downloadURL.absoluteString)
+            }
+        }
+        
+    }
+    
+    private func resizeAndCropImage(image: UIImage, targetSize: CGSize) -> UIImage? {
+        let widthRatio  = targetSize.width  / image.size.width
+        let heightRatio = targetSize.height / image.size.height
+        let scaleFactor = max(widthRatio, heightRatio)
+        
+        let scaledWidth  = image.size.width * scaleFactor
+        let scaledHeight = image.size.height * scaleFactor
+        
+        let centerPoint = CGPoint(x: (targetSize.width - scaledWidth) / 2.0,
+                                  y: (targetSize.height - scaledHeight) / 2.0)
+        
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
+        image.draw(in: CGRect(x: centerPoint.x, y: centerPoint.y, width: scaledWidth, height: scaledHeight))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage
+    }
     
 }
 
