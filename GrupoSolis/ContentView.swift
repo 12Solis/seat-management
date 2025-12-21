@@ -29,22 +29,6 @@ struct ContentView: View {
                     .foregroundStyle(.principalBlue)
                     .font(.title)
                     .bold()
-                /*Button("Prueba claves"){
-                 authService.checkAccessCode(code: "123456"){result in
-                 if result == true {
-                 print("Codigos accesados")
-                 }else{
-                 print("Error accesando codigos")
-                 }
-                 
-                 }
-                 }*/
-                
-                /*Button("Crear Nuevo Evento desde Plantilla") {
-                    isShowingTemplateSelection = true
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(eventVM.isLoading)*/
                 
                 if eventVM.isLoading {
                     ProgressView("Cargando...")
@@ -68,7 +52,7 @@ struct ContentView: View {
                         ForEach(eventVM.events){event in
                             
                             EventListElement(event: event)
-                                .contentShape(Rectangle())
+                                .shadow(radius: 10)
                                 .onTapGesture {
                                     selectedEvent = event
                                     fetchAndOpenMap(for: event)

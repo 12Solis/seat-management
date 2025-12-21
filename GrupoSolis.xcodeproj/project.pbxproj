@@ -12,6 +12,8 @@
 		7D00E0C92EC583BC00F25C3B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 7D00E0C82EC583BC00F25C3B /* FirebaseFirestore */; };
 		7D00E0CB2EC583BC00F25C3B /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 7D00E0CA2EC583BC00F25C3B /* FirebaseFirestoreCombine-Community */; };
 		7D2B89302EF7998000D69041 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 7D2B892F2EF7998000D69041 /* Kingfisher */; };
+		7D2B89332EF7AFE900D69041 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 7D2B89322EF7AFE900D69041 /* FirebaseDatabase */; };
+		7D2B89352EF7B01F00D69041 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 7D2B89342EF7B01F00D69041 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,9 +33,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D2B89332EF7AFE900D69041 /* FirebaseDatabase in Frameworks */,
 				7D00E0C52EC583BC00F25C3B /* FirebaseAuth in Frameworks */,
 				7D00E0CB2EC583BC00F25C3B /* FirebaseFirestoreCombine-Community in Frameworks */,
 				7D00E0C72EC583BC00F25C3B /* FirebaseAuthCombine-Community in Frameworks */,
+				7D2B89352EF7B01F00D69041 /* FirebaseStorage in Frameworks */,
 				7D00E0C92EC583BC00F25C3B /* FirebaseFirestore in Frameworks */,
 				7D2B89302EF7998000D69041 /* Kingfisher in Frameworks */,
 			);
@@ -46,6 +50,7 @@
 			isa = PBXGroup;
 			children = (
 				7D00E0B72EC581A200F25C3B /* GrupoSolis */,
+				7D2B89312EF7AFE900D69041 /* Frameworks */,
 				7D00E0B62EC581A200F25C3B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -56,6 +61,13 @@
 				7D00E0B52EC581A200F25C3B /* GrupoSolis.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		7D2B89312EF7AFE900D69041 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -83,6 +95,8 @@
 				7D00E0C82EC583BC00F25C3B /* FirebaseFirestore */,
 				7D00E0CA2EC583BC00F25C3B /* FirebaseFirestoreCombine-Community */,
 				7D2B892F2EF7998000D69041 /* Kingfisher */,
+				7D2B89322EF7AFE900D69041 /* FirebaseDatabase */,
+				7D2B89342EF7B01F00D69041 /* FirebaseStorage */,
 			);
 			productName = GrupoSolis;
 			productReference = 7D00E0B52EC581A200F25C3B /* GrupoSolis.app */;
@@ -411,6 +425,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7D2B892E2EF7998000D69041 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		7D2B89322EF7AFE900D69041 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7D00E0C32EC583BC00F25C3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		7D2B89342EF7B01F00D69041 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7D00E0C32EC583BC00F25C3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

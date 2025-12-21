@@ -246,56 +246,34 @@ class EventService: ObservableObject {
     
     // MARK: Operaciónes de imagen
     
-    private let imageSize = CGSize(width: 600, height: 300)
+    private let imageSize = CGSize(width: 1200, height: 320)
     
-    func processAndUploadImage( originalImage: UIImage, eventId: String, completion: @escaping (String?) -> Void){
+    func processAndUploadImage(originalImage: UIImage, completion: @escaping (String?) -> Void) {
+
+        let imageFileName = UUID().uuidString
         
-        self.isLoading = true
-        self.errorMessage = nil
-        
-        if originalImage.size.height > originalImage.size.width {
-            self.errorMessage = "La imagen debe ser horizontal para ajustarse al formato."
-            self.isLoading = false
+        guard let processedImage = resizeAndCropImage(image: originalImage, targetSize: imageSize),
+              let imageData = processedImage.jpegData(compressionQuality: 0.7) else {
             completion(nil)
             return
         }
         
-        guard let processedImage = resizeAndCropImage(image: originalImage, targetSize: imageSize) else {
-            self.errorMessage = "Error al procesar imagen"
-            self.isLoading = false
-            completion(nil)
-            return
-        }
+        let storageRef = Storage.storage().reference().child("event_images/\(imageFileName).jpg")
         
-        guard let imageData = processedImage.jpegData(compressionQuality: 0.8) else {
-            self.isLoading = false
-            completion(nil)
-            return
-        }
-        
-        let storageRef = Storage.storage().reference().child("event_images/\(eventId).jpg")
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
         
-        storageRef.putData(imageData, metadata: metadata){metadata, error in
+        storageRef.putData(imageData, metadata: metadata) { _, error in
             if let error = error {
-                self.errorMessage = error.localizedDescription
-                self.isLoading = false
+                print("Error subiendo imagen: \(error.localizedDescription)")
                 completion(nil)
                 return
             }
             
-            storageRef.downloadURL { url, error in
-                self.isLoading = false
-                guard let downloadURL = url else {
-                    completion(nil)
-                    return
-                }
-                print("Imagen subida con exito")
-                completion(downloadURL.absoluteString)
+            storageRef.downloadURL { url, _ in
+                completion(url?.absoluteString)
             }
         }
-        
     }
     
     private func resizeAndCropImage(image: UIImage, targetSize: CGSize) -> UIImage? {
@@ -309,7 +287,7 @@ class EventService: ObservableObject {
         let centerPoint = CGPoint(x: (targetSize.width - scaledWidth) / 2.0,
                                   y: (targetSize.height - scaledHeight) / 2.0)
         
-        UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 1.0)
         image.draw(in: CGRect(x: centerPoint.x, y: centerPoint.y, width: scaledWidth, height: scaledHeight))
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()

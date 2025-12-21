@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct CreateEventFormView: View {
     @Environment(\.dismiss) var dismiss
@@ -20,6 +21,9 @@ struct CreateEventFormView: View {
     @State private var date = Date()
     @State private var location = ""
     let totalSeats: Int
+    
+    @State private var selectedItem: PhotosPickerItem?
+    @State private var selectedImage: UIImage?
     
     @State private var showAlert = false
     @State private var errorMessage = ""
@@ -43,6 +47,29 @@ struct CreateEventFormView: View {
                     DatePicker("Selecciona la fecha", selection:$date,in: Date.now... ,displayedComponents: [.date, .hourAndMinute])
                         .labelsHidden()
                     TextField("Lugar",text: $location)
+                    HStack {
+                        Text("Imagen (Portada)")
+                        Spacer()
+                        if let img = selectedImage {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 40, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                        }
+                                            
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            Text(selectedImage == nil ? "Seleccionar" : "Cambiar")
+                        }
+                    }
+                    .onChange(of: selectedItem) { _ ,newItem in
+                        Task {
+                            if let data = try? await newItem?.loadTransferable(type: Data.self),
+                            let uiImage = UIImage(data: data) {
+                                selectedImage = uiImage
+                            }
+                        }
+                    }
                 }
                 Section("Configuración de precios"){
                     Toggle("Activar precios", isOn: $isPriceActive)
@@ -146,68 +173,85 @@ struct CreateEventFormView: View {
     }
     
     private func createEventFromTemplate(_ template: SeatMapTemplate) {
-        isCreatingEvent = true
-        errorMessage = ""
-        
-        let newEvent = Event(
-            name: name,
-            date: date,
-            place: location,
-            isPriceActive: isPriceActive,
-            seats: totalSeats
-        )
-        var compiledPrices: [Int : [Int : Double]] = [:]
-        
-        if isPriceActive {
-            for section in pricingConfigs {
-                var rowDict: [Int: Double] = [:]
-                if section.appliesToAllRows {
-                    for row in section.rows {
-                        rowDict[row.rowIndex] = section.unifiedPrice
-                    }
-                }else{
-                    for row in section.rows {
-                        rowDict[row.rowIndex] = row.price
+            isCreatingEvent = true 
+            errorMessage = ""
+            
+            let finalStep: (String?) -> Void = { imageURL in
+                
+                let newEvent = Event(
+                    name: name,
+                    date: date,
+                    place: location,
+                    isPriceActive: isPriceActive,
+                    image: imageURL,
+                    seats: totalSeats
+                )
+                
+                var compiledPrices: [Int : [Int : Double]] = [:]
+                if isPriceActive {
+                    for section in pricingConfigs {
+                        var rowDict: [Int: Double] = [:]
+                        if section.appliesToAllRows {
+                            for row in section.rows {
+                                rowDict[row.rowIndex] = section.unifiedPrice
+                            }
+                        } else {
+                            for row in section.rows {
+                                rowDict[row.rowIndex] = row.price
+                            }
+                        }
+                        compiledPrices[section.sectionIndex] = rowDict
                     }
                 }
                 
-                compiledPrices[section.sectionIndex] = rowDict
-            }
-        }
-        
-        print("Creando evento desde plantilla...")
-        
-        eventVM.createEvent(newEvent) { result in
-            switch result {
-            case .success(let eventId):
-                print("Evento creado con ID: \(eventId)")
+                print("Creando evento en Firestore...")
                 
-                self.viewModel.createFromTemplate(template: template, eventId: eventId, prices: compiledPrices) { seatMapResult in
-                    DispatchQueue.main.async {
-                        self.isCreatingEvent = false
+                eventVM.createEvent(newEvent) { result in
+                    switch result {
+                    case .success(let eventId):
+                        print("Evento creado con ID: \(eventId)")
                         
-                        switch seatMapResult {
-                        case .success(let seatMapId):
-                            print("Mapa creado con ID: \(seatMapId)")
-                            
-                            isPresented = false
-                            
-                        case .failure(let error):
-                            self.errorMessage = "Error creando mapa: \(error.localizedDescription)"
-                            print("Error creando mapa: \(error)")
+                        self.viewModel.createFromTemplate(template: template, eventId: eventId, prices: compiledPrices) { seatMapResult in
+                            DispatchQueue.main.async {
+                                self.isCreatingEvent = false
+                                
+                                switch seatMapResult {
+                                case .success(let seatMapId):
+                                    print("Mapa creado con ID: \(seatMapId)")
+                                    isPresented = false
+                                case .failure(let error):
+                                    self.errorMessage = "Error creando mapa: \(error.localizedDescription)"
+                                }
+                            }
+                        }
+                        
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.isCreatingEvent = false
+                            self.errorMessage = "Error creando evento: \(error.localizedDescription)"
                         }
                     }
                 }
-                
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    self.isCreatingEvent = false
-                    self.errorMessage = "Error creando evento: \(error.localizedDescription)"
-                    print("Error creando evento: \(error)")
+            }
+
+            if let imageToUpload = selectedImage {
+                print("Subiendo imagen...")
+                eventService.processAndUploadImage(originalImage: imageToUpload) { url in
+                    if let url = url {
+                        finalStep(url)
+                    } else {
+                        DispatchQueue.main.async {
+                            self.isCreatingEvent = false
+                            self.errorMessage = "Error al subir la imagen. Intenta de nuevo."
+                            self.showAlert = true
+                        }
+                    }
                 }
+            } else {
+                print("Creando evento sin imagen...")
+                finalStep(nil)
             }
         }
-    }
     
 }
 

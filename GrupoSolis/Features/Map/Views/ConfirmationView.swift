@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ConfirmationView: View {
     let event: Event
@@ -72,9 +73,10 @@ struct ConfirmationView: View {
                         }
                     }
                     VStack{
-                        UnevenRoundedRectangle(cornerRadii: .init(topLeading: 20, bottomLeading: 0, bottomTrailing: 0, topTrailing: 20))
-                            .foregroundStyle(.principalBlue)
-                            .frame(width: 300, height: 80)
+
+                        ConfirmationViewImage(event: event)
+                            .frame(width: 300)
+                        
                         Text(event.name)
                             .textCase(.uppercase)
                             .font(.title2)
@@ -180,8 +182,6 @@ struct ConfirmationView: View {
         .navigationBarBackButtonHidden()
     }
 }
-
-import SwiftUI
 
 struct dottedLine: Shape {
     func path(in rect: CGRect) -> Path {
