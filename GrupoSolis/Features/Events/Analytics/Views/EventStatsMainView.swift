@@ -14,44 +14,21 @@ struct EventStatsMainView: View {
         ZStack{
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
-            VStack{
+            ScrollView{
                 ZStack {
                     BackgroundRectangle()
                     VStack{
                         Spacer()
+                        
                         Text("Ingresos Totales")
                             .font(.title)
                             .bold()
-                        
-                        Spacer()
+                            .padding()
                         
                         Text("$\(viewModel.totalRevenue.formatted())")
                             .font(.largeTitle)
                             .bold()
-                        Text("$\(viewModel.totalCash.formatted())")
-                        
                         Spacer()
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            ZStack{
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(Color(uiColor: .systemGroupedBackground))
-                                    .frame(width: 170,height:20)
-                                Text("Boletos Vendidos: \(viewModel.soldSeatsCount) / \(event.seats)")
-                                    .font(.caption)
-                                    .bold()
-                            }
-                            ZStack{
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(Color(uiColor: .systemGroupedBackground))
-                                    .frame(width: 170,height:20)
-                                Text("Boletos Reservados: \(viewModel.reservedSeatsCount)")
-                                    .font(.caption)
-                                    .bold()
-                            }
-                            Spacer()
-                        }
                         
                     }
                     .frame(height: 178)
@@ -67,9 +44,9 @@ struct EventStatsMainView: View {
                             Text("Ocupación")
                                 .font(.title3)
                                 .bold()
-                            ColorLabel(label: "Vendidos", color: .blue)
-                            ColorLabel(label: "Reservados", color: .orange)
-                            ColorLabel(label: "Disponibles", color: .gray)
+                            ColorLabel(label: "Vendidos: \(viewModel.soldSeatsCount)", color: .blue)
+                            ColorLabel(label: "Reservados: \(viewModel.reservedSeatsCount)", color: .orange)
+                            ColorLabel(label: "Disponibles: \(event.seats - (viewModel.soldSeatsCount + viewModel.reservedSeatsCount))", color: .gray)
 
                         }
                         .padding(.leading)
@@ -88,6 +65,22 @@ struct EventStatsMainView: View {
                         BackgroundRectangle()
                         PaymentMethodGraph(isCash: false, totalAmount: viewModel.totalRevenue, totalInCash: viewModel.totalCash)
                     }
+                }
+                .padding(.bottom)
+                HStack {
+                    ZStack {
+                        BackgroundRectangle()
+                            .frame(width: 200)
+                            .overlay{
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(.red,lineWidth: 3)
+                                    .padding(.horizontal)
+                                    .frame(width: 200)
+                            }
+                        DebtGraph(total: viewModel.totalDebt)
+                        
+                    }
+                    Spacer()
                 }
 
             }

@@ -97,5 +97,18 @@ class SeatMapViewModel: ObservableObject {
         
         return Int(sumPaid + sumLiquidated)
     }
+    
+    var totalDebt: Int {
+        let seatsWithDebt = seats.filter {
+            ($0.status == .reserved)
+        }
+        
+        let sumDebt = seatsWithDebt.reduce(0.0) { partialResult, seat in
+            let price = seat.price ?? 0
+            let paid = seat.amountPaid ?? 0
+            return partialResult + (price - paid)
+        }
+        return Int(sumDebt)
+    }
 
 }

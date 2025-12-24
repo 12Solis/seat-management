@@ -35,7 +35,7 @@ struct LoginTexfieldElement: View {
                         .autocorrectionDisabled()
                         .autocapitalization(.none)
                 }
-            } else{
+            } else if label == "password"{
                 HStack{
                     if isPasswordVisible {
                         TextField(label,text: $field)
@@ -59,8 +59,17 @@ struct LoginTexfieldElement: View {
                         Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
                             .foregroundStyle(.white)
                     }
+                    .buttonStyle(.borderless)
                     .padding(.horizontal)
                 }
+            }else {
+                TextField("", text: $field)
+                    .focused($isFocused)
+                    .foregroundStyle(.white)
+                    .keyboardType(.default)
+                    .padding()
+                    .autocorrectionDisabled()
+                    .autocapitalization(.allCharacters)
             }
                 
                 
@@ -69,5 +78,5 @@ struct LoginTexfieldElement: View {
 }
 
 #Preview {
-    LoginTexfieldElement(label: "",field: .constant("") )
+    LoginTexfieldElement(label: "email",field: .constant("") )
 }

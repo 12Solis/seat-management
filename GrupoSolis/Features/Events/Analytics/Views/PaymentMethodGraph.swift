@@ -65,7 +65,7 @@ struct PaymentMethodGraph: View {
                 }
             }
             .frame(height: 20)
-            .padding(.horizontal)
+            .padding(.horizontal,40)
             .onAppear {
                 withAnimation(.easeInOut(duration: 1.5)) {
                     animationProgress = 1

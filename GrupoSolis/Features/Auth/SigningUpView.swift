@@ -26,23 +26,21 @@ struct SigningUpView: View {
             VStack{
                 Form{
                     Section(header: Text("Email")){
-                        TextField("Email", text: $email)
-                            .autocapitalization(.none)
-                            .keyboardType(.emailAddress)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .autocorrectionDisabled()
+                        LoginTexfieldElement(label: "email", field: $email)
+                            .padding(.vertical,-10)
                     }
-                    Section(header: Text("Password")){
-                        SecureField("Password",text: $password)
-                            .textFieldStyle(.roundedBorder)
-                        SecureField("Confirm Password:",text: $passwordConfirmation)
-                            .textFieldStyle(.roundedBorder)
+                    Section(header: Text("Contraseña")){
+                        LoginTexfieldElement(label: "password", field: $password)
+                            .padding(.vertical,-10)
+                    }
+                    Section(header: Text("Confirmar contraseña")){
+                        LoginTexfieldElement(label: "password", field: $passwordConfirmation)
+                            .padding(.vertical,-10)
+                        
                     }
                     Section(header:Text("Código de acceso")){
-                        TextField("Código", text: $accessCode)
-                            .autocapitalization(.allCharacters)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .autocorrectionDisabled()
+                        LoginTexfieldElement(label: "Codigo", field: $accessCode)
+                            .padding(.vertical,-10)
                     }
                     HStack {
                         Spacer()
@@ -78,6 +76,7 @@ struct SigningUpView: View {
 
                         }
                         .buttonStyle(.borderedProminent)
+                        .tint(.principalBlue)
                         Spacer()
                     }
                 }
@@ -95,6 +94,13 @@ struct SigningUpView: View {
             .padding()
             .navigationTitle("Registro")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar{
+                ToolbarItem(placement:.cancellationAction){
+                    Button("Cancelar"){
+                        dismiss()
+                    }
+                }
+            }
             
         }
         
