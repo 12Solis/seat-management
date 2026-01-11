@@ -3,10 +3,10 @@
 **Tessera** (Project Code: *GrupoSolis*) is a comprehensive iOS application designed for event organizers to manage venue seating, ticket sales, and real-time revenue analytics. It features a Ticketmaster-style interactive map allowing for precise seat selection, reservation management, and payment settlement using a robust Firebase backend.
 
 <p align="center">
-  <img src= "EventSelectionViewScreenshot.png" width="200" alt="Event Selection View" />
+  <img src= "EventSelectionScreenshot.png" width="200" alt="Event Selection View" />
   <img src="ZoomableMapViewScreenshot.png" width="200" alt="Seat Map View" />
   <img src="SeatBubbleScreenshot.png" width="200" alt="Seat Bubble" />
-  <img src="ConfirmationSheetScreenshot.png" width="200" alt="Payment Confirmation" />
+  <img src="ConfirmationScreenshot.png" width="200" alt="Payment Confirmation" />
   <img src="StatsViewScreenshot.png" width="200" alt="Statistics Dashboard" />
 </p>
 
