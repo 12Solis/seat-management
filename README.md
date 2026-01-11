@@ -43,13 +43,5 @@ To ensure data integrity within SwiftUI's declarative views, the app uses a stri
 ### Accurate Financial Reporting
 The statistics engine implements defensive logic to prevent "ghost revenue." It filters transactions based on a combination of *Status* (`.sold` | `.reserved`) and *Payment Method*, ensuring that seats released or refunded (`.available`) are immediately deducted from the financial totals, regardless of their previous payment history.
 
-##  Installation
-
-1.  Clone the repository.
-2.  Add your `GoogleService-Info.plist` file to the `App` folder (Required for Firebase connection).
-3.  Open `GrupoSolis.xcodeproj` in Xcode 15+.
-4.  Ensure iOS Target is set to 16.0 or higher.
-5.  Build and run on Simulator or Device.
-
 ---
 *Created by Leonardo Solis - 2025*
