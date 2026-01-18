@@ -20,9 +20,22 @@
 		7D00E0B52EC581A200F25C3B /* GrupoSolis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GrupoSolis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7DEE68C12EFFC8DA00A76478 /* Exceptions for "GrupoSolis" folder in "GrupoSolis" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7D00E0B42EC581A200F25C3B /* GrupoSolis */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7D00E0B72EC581A200F25C3B /* GrupoSolis */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7DEE68C12EFFC8DA00A76478 /* Exceptions for "GrupoSolis" folder in "GrupoSolis" target */,
+			);
 			path = GrupoSolis;
 			sourceTree = "<group>";
 		};
@@ -292,6 +305,7 @@
 				DEVELOPMENT_TEAM = NR95NUL4NL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GrupoSolis/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -330,6 +344,7 @@
 				DEVELOPMENT_TEAM = NR95NUL4NL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GrupoSolis/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
